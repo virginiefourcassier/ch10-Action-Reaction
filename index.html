@@ -38,7 +38,44 @@
     <!-- On ajoutera le cow-boy, la fusée et le projectile ici -->
   </div>
   <script>
-    // Le code d'animation viendra ici
+    const projectile = document.getElementById('projectile');
+
+    // paramètres de la trajectoire
+    const startX = 430;      // position de départ (x)
+    const startY = 450;      // position de départ (y)
+    const amplitudeX = 300;  // distance parcourue horizontalement
+    const amplitudeY = 180;  // hauteur maximale de la « cloche »
+    const duration = 2000;   // durée de l'animation en millisecondes
+
+    function animateProjectile() {
+      const startTime = performance.now();
+
+      function step(now) {
+        const t = (now - startTime) / duration; // t entre 0 et 1
+
+        if (t <= 1) {
+          // Avancement horizontal linéaire
+          const x = startX + amplitudeX * t;
+          // Trajectoire en cloche (parabole simple)
+          const y = startY - (4 * amplitudeY * t * (1 - t));
+
+          projectile.style.left = x + 'px';
+          projectile.style.top = y + 'px';
+
+          requestAnimationFrame(step);
+        } else {
+          // retour à la position de départ
+          projectile.style.left = startX + 'px';
+          projectile.style.top = startY + 'px';
+        }
+      }
+
+      requestAnimationFrame(step);
+    }
+
+    // lance l'animation au chargement de la page
+    window.addEventListener('load', animateProjectile);
   </script>
+
 </body>
 </html>
