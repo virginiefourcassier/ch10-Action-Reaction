@@ -80,7 +80,7 @@
     /* ===== FLÈCHES D'ACTION (ROUGES) ===== */
     .arrow {
       position: absolute;
-      width: 10px;              /* flèches plus épaisses */
+      width: 10px;              /* flèches épaisses */
       background: red;
       transform-origin: center top;
       display: none;            /* cachées au départ */
@@ -102,7 +102,7 @@
 
     #arrowGunLeft,
     #arrowGunRight {
-      height: 45px;   /* flèches un peu plus petites pour les pistolets */
+      height: 45px;   /* flèches pour les pistolets */
     }
 
     #arrowBalloon {
@@ -229,7 +229,7 @@
       const startTime = performance.now();
 
       // Aléatoire pour la chute du ballon
-      const randomOffsetX = (Math.random() - 0.5) * 100; // décalage latéral
+      const randomOffsetX = (Math.random() - 0.5) * 100; // décalage latéral global
       const randomOffsetY = Math.random() * 50;          // variation de profondeur
 
       function step(now) {
@@ -251,22 +251,31 @@
             cowboyBottom = initialCowboy.bottom + wobble;
           } else {
             const localT = (t - 0.25) / 0.75;
-            const jump = 90 * (1 - Math.pow(2 * localT - 1, 2)); // 90 px au lieu de 60
+            const jump = 90 * (1 - Math.pow(2 * localT - 1, 2)); // 90 px
             cowboyBottom = initialCowboy.bottom + jump;
           }
           cowboy.style.bottom = cowboyBottom + 'px';
 
-          // ----- BALLON : se dégonfle et tombe -----
+          // ----- BALLON : se dégonfle puis tombe en zigzag -----
           let x, y, size;
           if (t < 0.5) {
+            // Phase 1 : encore près du cow-boy, commence à se dégonfler
             const localT = t / 0.5;
             x = initialProjectile.left + randomOffsetX * 0.3 * localT;
             y = initialProjectile.top - 40 * localT;
             size = 20 * (1 - 0.5 * localT); // 20 → 10 px
           } else {
-            const localT = (t - 0.5) / 0.5;
-            x = initialProjectile.left + randomOffsetX;
-            y = initialProjectile.top - 40 + (220 + randomOffsetY) * localT;
+            // Phase 2 : chute en zigzag
+            const localT = (t - 0.5) / 0.5;   // 0 → 1
+            const fallY = initialProjectile.top - 40 + (220 + randomOffsetY) * localT;
+
+            // zigzag horizontal (sinus) autour de randomOffsetX
+            const zigzagAmplitude = 40;
+            const zigzag = Math.sin(localT * Math.PI * 4) * zigzagAmplitude;
+
+            x = initialProjectile.left + randomOffsetX + zigzag;
+            y = fallY;
+
             size = 10 * (1 - localT); // 10 → 0 px
           }
           const clampedSize = Math.max(size, 2);
@@ -282,34 +291,67 @@
             // 1) Flèche fusée : base réelle (au-dessus des flammes)
             const rocketRect = rocket.getBoundingClientRect();
             const rocketCenterX = rocketRect.left + rocketRect.width / 2 - sceneRect.left;
-            const rocketBaseOffset = 310; // valeur plus grande pour remonter la base
-            const rocketBaseY = rocketRect.bottom - sceneRect.top - rocketBaseOffset;
-            arrowRocket.style.left = (rocketCenterX - 5) + 'px'; // -5 car flèche plus épaisse
+
+            // Décalage vers le bas = 1,3 fois la hauteur de la flèche
+            const rocketArrowHeight = parseFloat(getComputedStyle(arrowRocket).height);
+            const rocketBaseY = rocketRect.bottom - sceneRect.top - 1.3 * rocketArrowHeight;
+
+            arrowRocket.style.left = (rocketCenterX - 5) + 'px';
             arrowRocket.style.top = rocketBaseY + 'px';
 
-            // 2) Flèches pistolets : base des pistolets (au niveau des flammes)
+            // 2) Flèches pistolets : remontées d'une hauteur de flèche
             const cowboyRect = cowboy.getBoundingClientRect();
             const cowboyBottomY = cowboyRect.bottom - sceneRect.top;
             const cowboyCenterX = cowboyRect.left + cowboyRect.width / 2 - sceneRect.left;
 
             const gunOffsetX = 55;  // distance depuis le centre vers chaque pistolet
-            const gunOffsetY = -20; // remonter pour atteindre la base des pistolets
+            const gunArrowHeight = parseFloat(getComputedStyle(arrowGunLeft).height);
 
             const leftGunX = cowboyCenterX - gunOffsetX;
             const rightGunX = cowboyCenterX + gunOffsetX;
 
+            const gunBaseY = cowboyBottomY - gunArrowHeight; // remonté d'une hauteur de flèche
+
             arrowGunLeft.style.left = (leftGunX - 5) + 'px';
-            arrowGunLeft.style.top = (cowboyBottomY + gunOffsetY) + 'px';
+            arrowGunLeft.style.top = gunBaseY + 'px';
 
             arrowGunRight.style.left = (rightGunX - 5) + 'px';
-            arrowGunRight.style.top = (cowboyBottomY + gunOffsetY) + 'px';
+            arrowGunRight.style.top = gunBaseY + 'px';
 
-            // 3) Flèche ballon : sous le ballon
+            // 3) Flèche ballon : toujours opposée au mouvement instantané
             const projRect = projectile.getBoundingClientRect();
             const projCenterX = projRect.left + projRect.width / 2 - sceneRect.left;
-            const projBottomY = projRect.bottom - sceneRect.top;
+            const projCenterY = projRect.top + projRect.height / 2 - sceneRect.top;
+
+            // On calcule une approximation de la vitesse (dx, dy) avec une petite dérivée numérique
+            const dt = 0.01;
+            const tAhead = Math.min(t + dt, 1);
+            let xAhead, yAhead;
+
+            if (tAhead < 0.5) {
+              const localT = tAhead / 0.5;
+              xAhead = initialProjectile.left + randomOffsetX * 0.3 * localT;
+              yAhead = initialProjectile.top - 40 * localT;
+            } else {
+              const localT = (tAhead - 0.5) / 0.5;
+              const fallY2 = initialProjectile.top - 40 + (220 + randomOffsetY) * localT;
+              const zigzagAmplitude2 = 40;
+              const zigzag2 = Math.sin(localT * Math.PI * 4) * zigzagAmplitude2;
+              xAhead = initialProjectile.left + randomOffsetX + zigzag2;
+              yAhead = fallY2;
+            }
+
+            const dx = xAhead - x;
+            const dy = yAhead - y;
+
+            // angle du mouvement
+            const angleMove = Math.atan2(dy, dx);
+            // flèche opposée au mouvement : + π (sens contraire)
+            const angleArrow = angleMove + Math.PI;
+
             arrowBalloon.style.left = (projCenterX - 5) + 'px';
-            arrowBalloon.style.top = projBottomY + 'px';
+            arrowBalloon.style.top = (projCenterY) + 'px';
+            arrowBalloon.style.transform = 'rotate(' + angleArrow + 'rad)';
           }
 
           animationFrameId = requestAnimationFrame(step);
