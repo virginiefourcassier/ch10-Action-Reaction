@@ -91,7 +91,6 @@
       border-right: 12px solid transparent;
     }
 
-    /* flèches rouges (action) */
     .arrow-red {
       background: red;
     }
@@ -99,7 +98,6 @@
       border-top: 12px solid red;
     }
 
-    /* flèches vertes (réaction) */
     .arrow-green {
       background: #00aa00;
     }
@@ -208,9 +206,10 @@
       cowboy.style.bottom = initialCowboy.bottom + 'px';
       cowboy.src = 'cowboy.png';
 
-      [arrowRocket, arrowGunLeft, arrowGunRight, arrowBalloon,
-       arrowRocketR, arrowGunLeftR, arrowGunRightR, arrowBalloonR]
-        .forEach(a => a.style.display = 'none');
+      [
+        arrowRocket, arrowGunLeft, arrowGunRight, arrowBalloon,
+        arrowRocketR, arrowGunLeftR, arrowGunRightR, arrowBalloonR
+      ].forEach(a => a.style.display = 'none');
     }
 
     function stopAnimation() {
@@ -256,7 +255,7 @@
 
           // ===== Ballon =====
           let x, y, size;
-          const rise = 180; // hauteur de montée
+          const rise = 180;
           if (t < 0.5) {
             const localT = t / 0.5;
             x = initialProjectile.left;
@@ -291,17 +290,17 @@
             if (chkAction.checked) {
               arrowRocket.style.left = (rocketCenterX - 5) + 'px';
               arrowRocket.style.top = rocketBaseY + 'px';
-              arrowRocket.style.transform = 'rotate(0rad)';
+              arrowRocket.style.transform = 'rotate(0rad)'; // vers le bas
               arrowRocket.style.display = 'block';
             } else {
               arrowRocket.style.display = 'none';
             }
 
             if (chkReaction.checked) {
-              // flèche verte opposée (vers le haut)
+              // flèche verte vers le haut, collée à la rouge (base commune)
               arrowRocketR.style.left = (rocketCenterX - 5) + 'px';
-              arrowRocketR.style.top = (rocketBaseY - rocketArrowHeight) + 'px';
-              arrowRocketR.style.transform = 'rotate(Math.PI rad)'; // vers le haut
+              arrowRocketR.style.top = rocketBaseY + 'px';
+              arrowRocketR.style.transform = 'rotate(3.14159rad)'; // vers le haut
               arrowRocketR.style.display = 'block';
             } else {
               arrowRocketR.style.display = 'none';
@@ -323,7 +322,7 @@
                 arrowGunRight.style.display = 'block';
                 arrowGunLeft.style.left = (leftGunX - 5) + 'px';
                 arrowGunLeft.style.top = gunBaseY + 'px';
-                arrowGunLeft.style.transform = 'rotate(0rad)';
+                arrowGunLeft.style.transform = 'rotate(0rad)'; // bas
                 arrowGunRight.style.left = (rightGunX - 5) + 'px';
                 arrowGunRight.style.top = gunBaseY + 'px';
                 arrowGunRight.style.transform = 'rotate(0rad)';
@@ -333,15 +332,15 @@
               }
 
               if (chkReaction.checked) {
-                // flèches vertes vers le haut
                 arrowGunLeftR.style.display = 'block';
                 arrowGunRightR.style.display = 'block';
+                // même base que les rouges, mais vers le haut
                 arrowGunLeftR.style.left = (leftGunX - 5) + 'px';
-                arrowGunLeftR.style.top = (gunBaseY - gunArrowHeight) + 'px';
-                arrowGunLeftR.style.transform = 'rotate(Math.PI rad)';
+                arrowGunLeftR.style.top = gunBaseY + 'px';
+                arrowGunLeftR.style.transform = 'rotate(3.14159rad)';
                 arrowGunRightR.style.left = (rightGunX - 5) + 'px';
-                arrowGunRightR.style.top = (gunBaseY - gunArrowHeight) + 'px';
-                arrowGunRightR.style.transform = 'rotate(Math.PI rad)';
+                arrowGunRightR.style.top = gunBaseY + 'px';
+                arrowGunRightR.style.transform = 'rotate(3.14159rad)';
               } else {
                 arrowGunLeftR.style.display = 'none';
                 arrowGunRightR.style.display = 'none';
@@ -370,11 +369,12 @@
               }
 
               if (chkReaction.checked) {
-                arrowBalloonR.style.display = 'block';
+                // même base que la flèche rouge, vers le haut
                 const h = parseFloat(getComputedStyle(arrowBalloonR).height);
+                arrowBalloonR.style.display = 'block';
                 arrowBalloonR.style.left = (projCenterX - 5) + 'px';
-                arrowBalloonR.style.top = (arrowTop - h) + 'px';
-                arrowBalloonR.style.transform = 'rotate(Math.PI rad)';
+                arrowBalloonR.style.top = arrowTop + 'px';
+                arrowBalloonR.style.transform = 'rotate(3.14159rad)';
               } else {
                 arrowBalloonR.style.display = 'none';
               }
@@ -384,7 +384,6 @@
               const dt = 0.01;
               const tAhead = Math.min(t + dt, 1);
               let xAhead, yAhead;
-              const rise = 180;
 
               if (tAhead < 0.5) {
                 const localT = tAhead / 0.5;
@@ -402,35 +401,35 @@
               const dx = xAhead - x;
               const dy = yAhead - y;
               const angleMove = Math.atan2(dy, dx);
-              const angleArrow = angleMove + Math.PI;
+              const angleRed = angleMove + Math.PI; // rouge opposée au mouvement
+              const angleGreen = angleMove;         // verte opposée à la rouge
 
               if (chkAction.checked) {
                 arrowBalloon.style.display = 'block';
                 arrowBalloon.style.left = (projCenterX - 5) + 'px';
                 arrowBalloon.style.top = projCenterY + 'px';
-                arrowBalloon.style.transform = 'rotate(' + angleArrow + 'rad)';
+                arrowBalloon.style.transform = 'rotate(' + angleRed + 'rad)';
               } else {
                 arrowBalloon.style.display = 'none';
               }
 
               if (chkReaction.checked) {
+                // même base que la rouge
                 arrowBalloonR.style.display = 'block';
-                const h = parseFloat(getComputedStyle(arrowBalloonR).height);
-                // flèche verte opposée (direction du mouvement)
-                const angleOpp = angleMove; // opposée à la rouge
                 arrowBalloonR.style.left = (projCenterX - 5) + 'px';
-                arrowBalloonR.style.top = (projCenterY - h) + 'px';
-                arrowBalloonR.style.transform = 'rotate(' + angleOpp + 'rad)';
+                arrowBalloonR.style.top = projCenterY + 'px';
+                arrowBalloonR.style.transform = 'rotate(' + angleGreen + 'rad)';
               } else {
                 arrowBalloonR.style.display = 'none';
               }
 
-              projectile.style.transform = 'rotate(' + angleArrow + 'rad)';
+              projectile.style.transform = 'rotate(' + angleRed + 'rad)';
             }
           } else {
-            [arrowRocket, arrowGunLeft, arrowGunRight, arrowBalloon,
-             arrowRocketR, arrowGunLeftR, arrowGunRightR, arrowBalloonR]
-              .forEach(a => a.style.display = 'none');
+            [
+              arrowRocket, arrowGunLeft, arrowGunRight, arrowBalloon,
+              arrowRocketR, arrowGunLeftR, arrowGunRightR, arrowBalloonR
+            ].forEach(a => a.style.display = 'none');
           }
 
           animationFrameId = requestAnimationFrame(step);
