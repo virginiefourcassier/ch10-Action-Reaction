@@ -90,25 +90,30 @@
     Virginie Fourcassier – Lycée Pierre de Fermat – Toulouse
   </div>
 
-  <script>
+   <script>
+    // Récupération des éléments de la page
     const projectile = document.getElementById('projectile');
+    const chkAction = document.getElementById('chkAction');
+    const chkReaction = document.getElementById('chkReaction');
 
-    // paramètres communs
+    // Paramètres communs pour la trajectoire du projectile (balle / ballon)
     const startX = 430;
     const startY = 450;
     const amplitudeX = 300;
     const amplitudeY = 180;
-    const duration = 2000;
+    const duration = 2000; // durée d'une animation en millisecondes
 
-    // animation 1 : trajectoire en cloche (balle éjectée)
-    function animateProjectileAction() {
+    // Animation 1 : trajectoire en cloche (ACTION)
+    function animateProjectileAction(callback) {
       const startTime = performance.now();
 
       function step(now) {
-        const t = (now - startTime) / duration;
+        const t = (now - startTime) / duration; // t évolue de 0 à 1
 
         if (t <= 1) {
+          // Mouvement horizontal (vers la droite)
           const x = startX + amplitudeX * t;
+          // Mouvement vertical en cloche (parabole simple)
           const y = startY - (4 * amplitudeY * t * (1 - t));
 
           projectile.style.left = x + 'px';
@@ -118,29 +123,32 @@
 
           requestAnimationFrame(step);
         } else {
+          // Retour à la position initiale
           projectile.style.left = startX + 'px';
           projectile.style.top = startY + 'px';
+          // Si une fonction de rappel est fournie, on la déclenche
+          if (callback) callback();
         }
       }
 
       requestAnimationFrame(step);
     }
 
-    // animation 2 : ballon qui se dégonfle (taille diminue)
-    function animateProjectileDeflate() {
+    // Animation 2 : ballon qui se dégonfle (RÉACTION)
+    function animateProjectileDeflate(callback) {
       const startTime = performance.now();
 
       function step(now) {
         const t = (now - startTime) / duration;
 
         if (t <= 1) {
-          // déplacement léger vers la gauche (ou vers le haut) pour suggérer le jet de gaz
+          // Légère translation (par exemple vers la gauche et le haut)
           const x = startX - amplitudeX * t * 0.3;
           const y = startY - amplitudeY * t * 0.2;
 
-          // taille qui diminue progressivement
-          const size = 20 * (1 - t); // de 20px à 0
-          const clampedSize = Math.max(size, 2); // on évite de descendre à 0
+          // Taille qui diminue progressivement (ballon qui se dégonfle)
+          const size = 20 * (1 - t);          // de 20px à 0
+          const clampedSize = Math.max(size, 2); // on évite 0 pour rester visible
 
           projectile.style.left = x + 'px';
           projectile.style.top = y + 'px';
@@ -149,23 +157,59 @@
 
           requestAnimationFrame(step);
         } else {
-          // fin : ballon presque disparu, on le remet en position initiale
+          // Retour à la position initiale et taille normale
           projectile.style.left = startX + 'px';
           projectile.style.top = startY + 'px';
           projectile.style.width = '20px';
           projectile.style.height = '20px';
+          if (callback) callback();
         }
       }
 
       requestAnimationFrame(step);
     }
 
-    // pour l'instant, on teste les deux animations l'une après l'autre
-    window.addEventListener('load', () => {
-      animateProjectileAction();
-      setTimeout(animateProjectileDeflate, duration + 500);
-    });
+    // Fonction qui décide quoi animer en fonction des cases cochées
+    function playAnimation() {
+      const wantAction = chkAction.checked;
+      const wantReaction = chkReaction.checked;
+
+      // Cas 1 : rien n'est coché → rien ne se passe
+      if (!wantAction && !wantReaction) {
+        return;
+      }
+
+      // Cas 2 : seulement Action
+      if (wantAction && !wantReaction) {
+        animateProjectileAction();
+        return;
+      }
+
+      // Cas 3 : seulement Réaction
+      if (!wantAction && wantReaction) {
+        animateProjectileDeflate();
+        return;
+      }
+
+      // Cas 4 : les deux cochées → on enchaîne Action puis Réaction
+      if (wantAction && wantReaction) {
+        animateProjectileAction(() => {
+          // petite pause entre les deux
+          setTimeout(() => {
+            animateProjectileDeflate();
+          }, 500);
+        });
+      }
+    }
+
+    // On relance l'animation à chaque clic sur une case
+    chkAction.addEventListener('change', playAnimation);
+    chkReaction.addEventListener('change', playAnimation);
+
+    // On lance une première fois au chargement (avec l'état initial des cases)
+    window.addEventListener('load', playAnimation);
   </script>
+
 
 
 </body>
