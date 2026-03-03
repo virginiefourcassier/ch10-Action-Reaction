@@ -4,13 +4,14 @@
   <meta charset="UTF-8">
   <title>Principe d'action-réaction</title>
 
- <!-- ===== DEBUT STYLE ANIMATION ACTION/RÉACTION ===================================================================== -->  
+  <!-- ===== DÉBUT STYLE ANIMATION ACTION/RÉACTION ===== -->
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: #ffffff;
     }
+
     #scene {
       position: relative;
       width: 900px;
@@ -20,63 +21,62 @@
       overflow: hidden;
       background: #ffffff;
     }
-#controls {
-  width: 900px;
-  margin: 10px auto 0 auto;
-  display: flex;
-  justify-content: flex-end;
-  gap: 20px;
-  font-size: 18px;
-  align-items: center;      /* nouvel alignement vertical */
-}
 
-#controls input {
-  transform: scale(1.3);
-  margin-right: 6px;
-}
+    #controls {
+      width: 900px;
+      margin: 10px auto 0 auto;
+      display: flex;
+      justify-content: flex-end;
+      gap: 20px;
+      font-size: 18px;
+      align-items: center;
+    }
 
-#btnPlay {
-  padding: 6px 14px;
-  font-size: 16px;
-  cursor: pointer;
-}
+    #controls input {
+      transform: scale(1.3);
+      margin-right: 6px;
+    }
 
+    #btnPlay {
+      padding: 6px 14px;
+      font-size: 16px;
+      cursor: pointer;
+    }
 
-    /* projectile (balle/jet de gaz) */
+    /* projectile (balle / ballon) */
     #projectile {
       position: absolute;
       width: 20px;
       height: 20px;
       border-radius: 50%;
       background: #8adf3c;
-      left: 430px;  /* à peu près au centre */
-      top: 450px;   /* près des pieds du cow-boy futur */
+      left: 430px;
+      top: 450px;
     }
-      #cowboy {
+
+    #cowboy {
       position: absolute;
-      width: 240px;   /* 160 × 1,5 */
+      width: 240px;
       height: auto;
       bottom: 0px;
       right: 40px;
     }
 
-     #rocket {
+    #rocket {
       position: absolute;
-      width: 660px;   /* 440 × 1,5 */
+      width: 660px;
       height: auto;
       top: 0px;
       left: 0px;
     }
 
-
-
-
-        #signature {
+    #signature {
       text-align: center;
       margin-top: 8px;
       font-size: 12px;
       color: #555;
     }
+
     /* ===== FLÈCHES D'ACTION (ROUGES) ===== */
     .arrow {
       position: absolute;
@@ -92,7 +92,7 @@
       bottom: -10px;
       border-left: 10px solid transparent;
       border-right: 10px solid transparent;
-      border-top: 10px solid red; /* pointe de la flèche vers le bas */
+      border-top: 10px solid red; /* pointe vers le bas */
     }
 
     #arrowRocket {
@@ -101,30 +101,26 @@
 
     #arrowGunLeft,
     #arrowGunRight {
-      height: 60px;   /* flèches plus petites pour les pistolets */
+      height: 60px;   /* flèches pour les pistolets */
     }
 
     #arrowBalloon {
       height: 40px;   /* flèche pour le ballon */
     }
-
   </style>
+  <!-- ===== FIN STYLE ANIMATION ACTION/RÉACTION ===== -->
 
- <!-- ===== FIN STYLE ANIMATION ACTION/RÉACTION ===================================================================== -->
-
-  
 </head>
 <body>
+
   <div id="controls">
     <button id="btnPlay">Play</button>
     <label><input type="checkbox" id="chkAction" checked> Action</label>
     <label><input type="checkbox" id="chkReaction"> Réaction</label>
   </div>
 
-
-  
   <div id="scene">
-           <img id="cowboy" src="cowboy.png" alt="Cow-boy">
+    <img id="cowboy" src="cowboy.png" alt="Cow-boy">
     <img id="rocket" src="rocket.png" alt="Fusée">
 
     <!-- Flèches rouges d'action -->
@@ -133,22 +129,17 @@
     <div id="arrowGunRight" class="arrow"></div>
     <div id="arrowBalloon" class="arrow"></div>
 
-    
     <div id="projectile"></div>
-
-    <!-- On ajoutera le cow-boy, la fusée et le projectile ici -->
   </div>
-    
+
   <div id="signature">
     Virginie Fourcassier – Lycée Pierre de Fermat – Toulouse
   </div>
 
-
-
- <!-- ===== DEBUT SCRIPT ANIMATION ACTION/RÉACTION ===================================================================== --> 
-  
+  <!-- ===== DÉBUT SCRIPT ANIMATION ACTION/RÉACTION ===== -->
   <script>
-    // ===== RÉFÉRENCES AUX ÉLÉMENTS HTML =====
+    // ===== 1. RÉFÉRENCES AUX ÉLÉMENTS HTML =====
+    const scene = document.getElementById('scene');
     const projectile = document.getElementById('projectile');   // ballon / balle
     const chkAction = document.getElementById('chkAction');     // case "Action"
     const chkReaction = document.getElementById('chkReaction'); // case "Réaction"
@@ -156,19 +147,17 @@
     const cowboy = document.getElementById('cowboy');           // image du cow-boy
     const rocket = document.getElementById('rocket');           // image de la fusée
 
-// Flèches d'action (rouges)
+    // Flèches d'action (rouges)
     const arrowRocket = document.getElementById('arrowRocket');
     const arrowGunLeft = document.getElementById('arrowGunLeft');
     const arrowGunRight = document.getElementById('arrowGunRight');
     const arrowBalloon = document.getElementById('arrowBalloon');
 
-
-    
-    // ===== PARAMÈTRES GÉNÉRAUX =====
+    // ===== 2. PARAMÈTRES GÉNÉRAUX =====
     const duration = 2500; // durée d'une séquence (ms)
 
     // Positions initiales mémorisées au chargement
-    const initialProjectile = { 
+    const initialProjectile = {
       left: parseFloat(getComputedStyle(projectile).left),
       top:  parseFloat(getComputedStyle(projectile).top)
     };
@@ -183,31 +172,36 @@
     let isPlaying = false;
     let animationFrameId = null;
 
-    // ===== OUTILS =====
+    // ===== 3. OUTILS =====
 
-    // Remise à zéro manuelle (on ne l'utilisera plus sur Stop, seulement si besoin plus tard)
+    // Remise à zéro de la scène (avant un nouveau Play)
     function resetScene() {
+      // Ballon
       projectile.style.left = initialProjectile.left + 'px';
       projectile.style.top = initialProjectile.top + 'px';
       projectile.style.width = '20px';
       projectile.style.height = '20px';
 
+      // Fusée
       rocket.style.left = initialRocket.left + 'px';
       rocket.style.top = initialRocket.top + 'px';
+      rocket.style.opacity = '1';
 
-      cowboy.style.bottom = initialCowboy.bottom + 'px';
+      // Cow-boy
       cowboy.style.bottom = initialCowboy.bottom + 'px';
 
-      updateActionArrowsVisibility(); // met à jour la visibilité des flèches
+      // flèches : visibilité en fonction de la case Action
+      updateActionArrowsVisibility();
     }
-// Affiche ou cache les flèches rouges selon la case "Action"
-function updateActionArrowsVisibility() {
-  const display = chkAction.checked ? 'block' : 'none';
-  arrowRocket.style.display = display;
-  arrowGunLeft.style.display = display;
-  arrowGunRight.style.display = display;
-  arrowBalloon.style.display = display;
-}
+
+    // Affiche ou cache les flèches rouges selon la case "Action"
+    function updateActionArrowsVisibility() {
+      const display = chkAction.checked ? 'block' : 'none';
+      arrowRocket.style.display = display;
+      arrowGunLeft.style.display = display;
+      arrowGunRight.style.display = display;
+      arrowBalloon.style.display = display;
+    }
 
     // Stop : on arrête l'animation où elle est, sans reset
     function stopAnimation() {
@@ -219,8 +213,7 @@ function updateActionArrowsVisibility() {
       }
     }
 
-    // ===== ANIMATION PRINCIPALE =====
-    // Mouvement indépendant des cases Action/Réaction (elles serviront pour les flèches plus tard)
+    // ===== 4. ANIMATION PRINCIPALE (mouvement) =====
 
     function playAnimation() {
       // Si déjà en lecture → Stop
@@ -234,51 +227,43 @@ function updateActionArrowsVisibility() {
 
       const startTime = performance.now();
 
-      // On choisit dès le départ un peu d'aléatoire pour la chute du ballon
+      // Aléatoire pour la chute du ballon
       const randomOffsetX = (Math.random() - 0.5) * 100; // décalage latéral
       const randomOffsetY = Math.random() * 50;          // variation de profondeur
 
       function step(now) {
-        if (!isPlaying) return; // si Stop a été cliqué
+        if (!isPlaying) return; // Stop cliqué
 
         const t = (now - startTime) / duration; // 0 → 1
 
         if (t <= 1) {
-          // ----- 1) FUSÉE : part du sol, disparaît vers le haut -----
-          // On suppose que sa position initiale est "au sol"
-          const rocketY = initialRocket.top - 400 * t; // mouvement vertical
+          // ----- FUSÉE : part du sol, disparaît vers le haut -----
+          const rocketY = initialRocket.top - 400 * t;
           rocket.style.top = rocketY + 'px';
-          // On peut diminuer légèrement l'opacité pour simuler la disparition
           rocket.style.opacity = String(1 - 0.3 * t);
 
-          // ----- 2) COW-BOY : vacille, monte un peu, puis redescend -----
-          // On découpe en deux phases : 0→0,5 vacillement, 0,5→1 montée+descente
+          // ----- COW-BOY : vacille, monte un peu, puis redescend -----
           let cowboyBottom;
           if (t < 0.25) {
-            // léger vacillement (montées / descentes rapides de quelques px)
-            const localT = t / 0.25; // 0 → 1
+            const localT = t / 0.25;
             const wobble = Math.sin(localT * Math.PI * 4) * 5; // ±5 px
             cowboyBottom = initialCowboy.bottom + wobble;
           } else {
-            // montée puis descente douce
-            const localT = (t - 0.25) / 0.75; // 0 → 1
-            // parabole : monte jusqu'à +60 px puis redescend
+            const localT = (t - 0.25) / 0.75;
             const jump = 60 * (1 - Math.pow(2 * localT - 1, 2));
             cowboyBottom = initialCowboy.bottom + jump;
           }
           cowboy.style.bottom = cowboyBottom + 'px';
 
-          // ----- 3) BALLON : se dégonfle et tombe -----
+          // ----- BALLON : se dégonfle et tombe -----
           let x, y, size;
           if (t < 0.5) {
-            // phase 1 : encore près du cow-boy, commence à se dégonfler
-            const localT = t / 0.5; // 0 → 1
+            const localT = t / 0.5;
             x = initialProjectile.left + randomOffsetX * 0.3 * localT;
             y = initialProjectile.top - 40 * localT;
             size = 20 * (1 - 0.5 * localT); // 20 → 10 px
           } else {
-            // phase 2 : chute vers le sol, en continuant à se dégonfler
-            const localT = (t - 0.5) / 0.5; // 0 → 1
+            const localT = (t - 0.5) / 0.5;
             x = initialProjectile.left + randomOffsetX;
             y = initialProjectile.top - 40 + (220 + randomOffsetY) * localT;
             size = 10 * (1 - localT); // 10 → 0 px
@@ -289,33 +274,63 @@ function updateActionArrowsVisibility() {
           projectile.style.width = clampedSize + 'px';
           projectile.style.height = clampedSize + 'px';
 
+          // ----- POSITIONNEMENT DES FLÈCHES (ACTION) -----
+          if (chkAction.checked) {
+            const sceneRect = scene.getBoundingClientRect();
+
+            // 1) flèche fusée : centre bas de la fusée
+            const rocketRect = rocket.getBoundingClientRect();
+            const rocketCenterX = rocketRect.left + rocketRect.width / 2 - sceneRect.left;
+            const rocketBottomY = rocketRect.bottom - sceneRect.top;
+            arrowRocket.style.left = (rocketCenterX - 3) + 'px';
+            arrowRocket.style.top = rocketBottomY + 'px';
+
+            // 2) flèches pistolets : on les place approximativement au niveau des mains
+            const cowboyRect = cowboy.getBoundingClientRect();
+            const cowboyBottomY = cowboyRect.bottom - sceneRect.top;
+            const gunOffsetX = cowboyRect.width * 0.2;
+            const leftGunX = cowboyRect.left + gunOffsetX - sceneRect.left;
+            const rightGunX = cowboyRect.right - gunOffsetX - sceneRect.left;
+            arrowGunLeft.style.left = (leftGunX - 3) + 'px';
+            arrowGunLeft.style.top = cowboyBottomY + 'px';
+            arrowGunRight.style.left = (rightGunX - 3) + 'px';
+            arrowGunRight.style.top = cowboyBottomY + 'px';
+
+            // 3) flèche ballon : sous le ballon
+            const projRect = projectile.getBoundingClientRect();
+            const projCenterX = projRect.left + projRect.width / 2 - sceneRect.left;
+            const projBottomY = projRect.bottom - sceneRect.top;
+            arrowBalloon.style.left = (projCenterX - 3) + 'px';
+            arrowBalloon.style.top = projBottomY + 'px';
+          }
+
           animationFrameId = requestAnimationFrame(step);
         } else {
-          // fin de l'animation : on repasse en mode Play, mais on laisse la scène telle quelle
+          // fin de l'animation : on laisse la scène telle quelle
           stopAnimation();
         }
       }
 
-      // On remet la scène à l'état initial avant de relancer un nouveau cycle
+      // Avant un nouveau cycle, on remet la scène dans son état initial
       resetScene();
       animationFrameId = requestAnimationFrame(step);
     }
 
-    // ===== ÉCOUTEURS =====
+    // ===== 5. ÉCOUTEURS D'ÉVÉNEMENTS =====
     btnPlay.addEventListener('click', playAnimation);
-// On initialise la visibilité des flèches au chargement
-updateActionArrowsVisibility();
 
-// Quand on coche/décoche "Action", on ne touche pas au mouvement, seulement aux flèches
-chkAction.addEventListener('change', () => {
-  updateActionArrowsVisibility();
-});
+    // au chargement : mise à zéro et visibilité des flèches
+    resetScene();
 
-    // Les cases Action / Réaction ne changent plus le mouvement (elles seront utilisées pour les flèches)
+    // cocher/décocher "Action" : ne touche pas au mouvement, seulement aux flèches
+    chkAction.addEventListener('change', () => {
+      updateActionArrowsVisibility();
+    });
+
+    // La case "Réaction" servira pour les flèches vertes (à ajouter ensuite)
+    // pour l'instant, elle n'a pas encore d'effet.
   </script>
-
- <!-- ===== FIN SCRIPT ANIMATION ACTION/RÉACTION ===================================================================== --> 
-
+  <!-- ===== FIN SCRIPT ANIMATION ACTION/RÉACTION ===== -->
 
 </body>
 </html>
