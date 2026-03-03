@@ -1,142 +1,3 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>Principe d'action-réaction</title>
-
-  <!-- ===== DÉBUT STYLE ANIMATION ACTION/RÉACTION ===== -->
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #ffffff;
-    }
-
-    #scene {
-      position: relative;
-      width: 900px;
-      height: 750px;
-      margin: 0 auto;
-      border: 1px solid #ccc;
-      overflow: hidden;
-      background: #ffffff;
-    }
-
-    #controls {
-      width: 900px;
-      margin: 10px auto 0 auto;
-      display: flex;
-      justify-content: flex-end;
-      gap: 20px;
-      font-size: 18px;
-      align-items: center;
-    }
-
-    #controls input {
-      transform: scale(1.3);
-      margin-right: 6px;
-    }
-
-    #btnPlay {
-      padding: 6px 14px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    /* ballon : image PNG avec fond transparent */
-    #projectile {
-      position: absolute;
-      width: 70px;
-      height: auto;
-      left: 430px;
-      top: 520px;
-    }
-
-    #cowboy {
-      position: absolute;
-      width: 240px;
-      height: auto;
-      bottom: 0px;
-      right: 40px;
-    }
-
-    /* fusée positionnée au sol au départ (bottom:0) */
-    #rocket {
-      position: absolute;
-      width: 660px;
-      height: auto;
-      bottom: 0px;
-      left: 0px;
-    }
-
-    #signature {
-      text-align: center;
-      margin-top: 8px;
-      font-size: 12px;
-      color: #555;
-    }
-
-    /* ===== FLÈCHES D'ACTION (ROUGES) ===== */
-    .arrow {
-      position: absolute;
-      width: 10px;
-      background: red;
-      transform-origin: center top;
-      display: none;
-    }
-
-    .arrow::after {
-      content: "";
-      position: absolute;
-      left: -9px;
-      bottom: -12px;
-      border-left: 12px solid transparent;
-      border-right: 12px solid transparent;
-      border-top: 12px solid red;
-    }
-
-    #arrowRocket {
-      height: 160px;
-    }
-
-    #arrowGunLeft,
-    #arrowGunRight {
-      height: 45px;
-    }
-
-    #arrowBalloon {
-      height: 40px;
-    }
-  </style>
-  <!-- ===== FIN STYLE ANIMATION ACTION/RÉACTION ===== -->
-
-</head>
-<body>
-
-  <div id="controls">
-    <button id="btnPlay">Play</button>
-    <label><input type="checkbox" id="chkAction"> Action</label>
-    <label><input type="checkbox" id="chkReaction"> Réaction</label>
-  </div>
-
-  <div id="scene">
-    <img id="cowboy" src="cowboy.png" alt="Cow-boy">
-    <img id="rocket" src="rocket.png" alt="Fusée">
-
-    <!-- Flèches rouges d'action -->
-    <div id="arrowRocket" class="arrow"></div>
-    <div id="arrowGunLeft" class="arrow"></div>
-    <div id="arrowGunRight" class="arrow"></div>
-    <div id="arrowBalloon" class="arrow"></div>
-
-    <!-- ballon image : respecte exactement le nom balloon.PNG -->
-    <img id="projectile" src="balloon.PNG" alt="Ballon">
-  </div>
-
-  <div id="signature">
-    Virginie Fourcassier – Lycée Pierre de Fermat – Toulouse
-  </div>
-
   <!-- ===== DÉBUT SCRIPT ANIMATION ACTION/RÉACTION ===== -->
   <script>
     const scene = document.getElementById('scene');
@@ -180,6 +41,7 @@
       rocket.style.opacity = '1';
 
       cowboy.style.bottom = initialCowboy.bottom + 'px';
+      cowboy.src = 'cowboy.png';     // image avec flammes pour le départ
 
       arrowRocket.style.display = 'none';
       arrowGunLeft.style.display = 'none';
@@ -213,16 +75,25 @@
           rocket.style.bottom = rocketBottom + 'px';
           rocket.style.opacity = String(1 - 0.4 * t);
 
-          // Cow-boy
+          // Cow-boy : montée (t < ~0.5) avec flammes, descente (t > ~0.5) sans flammes
           let cowboyBottom;
           if (t < 0.25) {
             const localT = t / 0.25;
             const wobble = Math.sin(localT * Math.PI * 4) * 5;
             cowboyBottom = initialCowboy.bottom + wobble;
+            cowboy.src = 'cowboy.png';      // début : image avec flammes
           } else {
             const localT = (t - 0.25) / 0.75;
             const jump = 90 * (1 - Math.pow(2 * localT - 1, 2));
             cowboyBottom = initialCowboy.bottom + jump;
+
+            if (localT < 0.5) {
+              // phase de montée : image avec flammes
+              cowboy.src = 'cowboy.png';
+            } else {
+              // phase de descente : image sans flammes
+              cowboy.src = 'cowboy2.png';
+            }
           }
           cowboy.style.bottom = cowboyBottom + 'px';
 
@@ -248,18 +119,15 @@
           projectile.style.top = y + 'px';
           projectile.style.width = clampedSize + 'px';
 
-          // Flèches (Action)
+          // Flèches (toutes les parties suivantes sont identiques à ta version précédente)
           if (chkAction.checked) {
             const sceneRect = scene.getBoundingClientRect();
 
-            // 1) Flèche fusée : remonter sous la base
+            // 1) Flèche fusée
             const rocketRect = rocket.getBoundingClientRect();
             const rocketCenterX = rocketRect.left + rocketRect.width / 2 - sceneRect.left;
             const rocketArrowHeight = parseFloat(getComputedStyle(arrowRocket).height);
-
-            // haut de flèche = bottom_fusée - 0,4 L (L = hauteur flèche)
             const rocketBaseY = rocketRect.bottom - sceneRect.top - 0.4 * rocketArrowHeight;
-
             arrowRocket.style.left = (rocketCenterX - 5) + 'px';
             arrowRocket.style.top = rocketBaseY + 'px';
             arrowRocket.style.display = 'block';
@@ -361,6 +229,3 @@
     resetScene();
   </script>
   <!-- ===== FIN SCRIPT ANIMATION ACTION/RÉACTION ===== -->
-
-</body>
-</html>
