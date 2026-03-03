@@ -142,7 +142,7 @@
     const scene = document.getElementById('scene');
     const projectile = document.getElementById('projectile');   // ballon / balle
     const chkAction = document.getElementById('chkAction');     // case "Action"
-    const chkReaction = document.getElementById('chkReaction'); // case "Réaction"
+    const chkReaction = document.getElementById('chkReaction'); // case "Réaction" (servira pour les flèches vertes)
     const btnPlay = document.getElementById('btnPlay');         // bouton Play/Stop
     const cowboy = document.getElementById('cowboy');           // image du cow-boy
     const rocket = document.getElementById('rocket');           // image de la fusée
@@ -278,25 +278,32 @@
           if (chkAction.checked) {
             const sceneRect = scene.getBoundingClientRect();
 
-            // 1) flèche fusée : centre bas de la fusée
+            // 1) Flèche fusée : on remonte pour atteindre la base visible
             const rocketRect = rocket.getBoundingClientRect();
             const rocketCenterX = rocketRect.left + rocketRect.width / 2 - sceneRect.left;
-            const rocketBottomY = rocketRect.bottom - sceneRect.top;
+            const rocketBaseOffset = 260; // à ajuster si besoin
+            const rocketBaseY = rocketRect.bottom - sceneRect.top - rocketBaseOffset;
             arrowRocket.style.left = (rocketCenterX - 3) + 'px';
-            arrowRocket.style.top = rocketBottomY + 'px';
+            arrowRocket.style.top = rocketBaseY + 'px';
 
-            // 2) flèches pistolets : on les place approximativement au niveau des mains
+            // 2) Flèches pistolets : autour des pieds du cow-boy, avec offsets
             const cowboyRect = cowboy.getBoundingClientRect();
             const cowboyBottomY = cowboyRect.bottom - sceneRect.top;
-            const gunOffsetX = cowboyRect.width * 0.2;
-            const leftGunX = cowboyRect.left + gunOffsetX - sceneRect.left;
-            const rightGunX = cowboyRect.right - gunOffsetX - sceneRect.left;
-            arrowGunLeft.style.left = (leftGunX - 3) + 'px';
-            arrowGunLeft.style.top = cowboyBottomY + 'px';
-            arrowGunRight.style.left = (rightGunX - 3) + 'px';
-            arrowGunRight.style.top = cowboyBottomY + 'px';
+            const cowboyCenterX = cowboyRect.left + cowboyRect.width / 2 - sceneRect.left;
 
-            // 3) flèche ballon : sous le ballon
+            const gunOffsetX = 55;  // distance depuis le centre vers chaque pistolet
+            const gunOffsetY = 0;   // pour monter/descendre les flèches si besoin
+
+            const leftGunX = cowboyCenterX - gunOffsetX;
+            const rightGunX = cowboyCenterX + gunOffsetX;
+
+            arrowGunLeft.style.left = (leftGunX - 3) + 'px';
+            arrowGunLeft.style.top = (cowboyBottomY + gunOffsetY) + 'px';
+
+            arrowGunRight.style.left = (rightGunX - 3) + 'px';
+            arrowGunRight.style.top = (cowboyBottomY + gunOffsetY) + 'px';
+
+            // 3) Flèche ballon : sous le ballon
             const projRect = projectile.getBoundingClientRect();
             const projCenterX = projRect.left + projRect.width / 2 - sceneRect.left;
             const projBottomY = projRect.bottom - sceneRect.top;
@@ -328,7 +335,6 @@
     });
 
     // La case "Réaction" servira pour les flèches vertes (à ajouter ensuite)
-    // pour l'instant, elle n'a pas encore d'effet.
   </script>
   <!-- ===== FIN SCRIPT ANIMATION ACTION/RÉACTION ===== -->
 
