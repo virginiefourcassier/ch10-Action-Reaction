@@ -101,7 +101,7 @@
     Virginie Fourcassier – Lycée Pierre de Fermat – Toulouse
   </div>
 
-     <script>
+  <script>
     // ===== RÉFÉRENCES AUX ÉLÉMENTS HTML =====
     const projectile = document.getElementById('projectile');   // ballon / balle
     const chkAction = document.getElementById('chkAction');     // case "Action"
@@ -111,47 +111,40 @@
     const rocket = document.getElementById('rocket');           // image de la fusée
 
     // ===== PARAMÈTRES GÉNÉRAUX =====
-    // Positions initiales mémorisées (on les lit une fois au début)
+    const duration = 2500; // durée d'une séquence (ms)
+
+    // Positions initiales mémorisées au chargement
     const initialProjectile = { 
       left: parseFloat(getComputedStyle(projectile).left),
       top:  parseFloat(getComputedStyle(projectile).top)
-    };
-    const initialCowboy = {
-      left: cowboy ? parseFloat(getComputedStyle(cowboy).left || 0) : 0,
-      top:  cowboy ? parseFloat(getComputedStyle(cowboy).top || 0)  : 0,
-      bottom: cowboy ? parseFloat(getComputedStyle(cowboy).bottom || 0) : 0
     };
     const initialRocket = {
       left: parseFloat(getComputedStyle(rocket).left),
       top:  parseFloat(getComputedStyle(rocket).top)
     };
+    const initialCowboy = {
+      bottom: parseFloat(getComputedStyle(cowboy).bottom)
+    };
 
-    // Durée d'une séquence d'animation (en ms)
-    const duration = 2500;
-
-    // Variable d'état : est‑ce qu’une animation est en cours ?
     let isPlaying = false;
-    let animationFrameId = null; // pour pouvoir arrêter requestAnimationFrame si besoin
+    let animationFrameId = null;
 
     // ===== OUTILS =====
 
-    // Fonction utilitaire pour remettre tous les objets à leur position/taille initiales
+    // Remise à zéro manuelle (on ne l'utilisera plus sur Stop, seulement si besoin plus tard)
     function resetScene() {
-      // Ballon / projectile
       projectile.style.left = initialProjectile.left + 'px';
       projectile.style.top = initialProjectile.top + 'px';
       projectile.style.width = '20px';
       projectile.style.height = '20px';
 
-      // Fusée
       rocket.style.left = initialRocket.left + 'px';
       rocket.style.top = initialRocket.top + 'px';
 
-      // Cow-boy (on le replace par rapport au bas de la scène)
       cowboy.style.bottom = initialCowboy.bottom + 'px';
     }
 
-    // Fonction pour arrêter proprement l'animation en cours
+    // Stop : on arrête l'animation où elle est, sans reset
     function stopAnimation() {
       isPlaying = false;
       btnPlay.textContent = 'Play';
@@ -159,13 +152,13 @@
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
       }
-      resetScene();
     }
 
     // ===== ANIMATION PRINCIPALE =====
+    // Mouvement indépendant des cases Action/Réaction (elles serviront pour les flèches plus tard)
 
     function playAnimation() {
-      // Si une animation tourne déjà, on la stoppe (effet Play/Stop)
+      // Si déjà en lecture → Stop
       if (isPlaying) {
         stopAnimation();
         return;
@@ -175,91 +168,80 @@
       btnPlay.textContent = 'Stop';
 
       const startTime = performance.now();
-      const wantAction = chkAction.checked;
-      const wantReaction = chkReaction.checked;
 
-      // On mémorise une petite variation aléatoire pour la chute du ballon (réaction)
-      const randomOffsetX = (Math.random() - 0.5) * 100; // léger décalage latéral
-      const randomOffsetY = (Math.random() * 50);        // variation de profondeur
+      // On choisit dès le départ un peu d'aléatoire pour la chute du ballon
+      const randomOffsetX = (Math.random() - 0.5) * 100; // décalage latéral
+      const randomOffsetY = Math.random() * 50;          // variation de profondeur
 
       function step(now) {
-        if (!isPlaying) {
-          // Si l'utilisateur a cliqué sur Stop au milieu
-          return;
-        }
+        if (!isPlaying) return; // si Stop a été cliqué
 
-        const t = (now - startTime) / duration; // t de 0 à 1
+        const t = (now - startTime) / duration; // 0 → 1
 
         if (t <= 1) {
-          // ----- ACTION : ce qui "agit" (flèches viendront ensuite) -----
-          if (wantAction) {
-            // Fusée qui monte verticalement
-            const rocketY = initialRocket.top - 250 * t;
-            rocket.style.top = rocketY + 'px';
+          // ----- 1) FUSÉE : part du sol, disparaît vers le haut -----
+          // On suppose que sa position initiale est "au sol"
+          const rocketY = initialRocket.top - 400 * t; // mouvement vertical
+          rocket.style.top = rocketY + 'px';
+          // On peut diminuer légèrement l'opacité pour simuler la disparition
+          rocket.style.opacity = String(1 - 0.3 * t);
 
-            // Cow-boy qui monte verticalement (on joue sur bottom)
-            const cowboyBottom = initialCowboy.bottom + 120 * t;
-            cowboy.style.bottom = cowboyBottom + 'px';
+          // ----- 2) COW-BOY : vacille, monte un peu, puis redescend -----
+          // On découpe en deux phases : 0→0,5 vacillement, 0,5→1 montée+descente
+          let cowboyBottom;
+          if (t < 0.25) {
+            // léger vacillement (montées / descentes rapides de quelques px)
+            const localT = t / 0.25; // 0 → 1
+            const wobble = Math.sin(localT * Math.PI * 4) * 5; // ±5 px
+            cowboyBottom = initialCowboy.bottom + wobble;
+          } else {
+            // montée puis descente douce
+            const localT = (t - 0.25) / 0.75; // 0 → 1
+            // parabole : monte jusqu'à +60 px puis redescend
+            const jump = 60 * (1 - Math.pow(2 * localT - 1, 2));
+            cowboyBottom = initialCowboy.bottom + jump;
           }
+          cowboy.style.bottom = cowboyBottom + 'px';
 
-          // ----- RÉACTION : ce qui "réagit" (ballon / gaz) -----
-          if (wantReaction) {
-            // Ballon qui se dégonfle et tombe au sol avec un peu d'aléatoire
-            // Phase 0 → 0,5 : ballon reste près du cow-boy, commence à se dégonfler
-            // Phase 0,5 → 1 : chute vers le bas
-            let x, y, size;
-            if (t < 0.5) {
-              const localT = t / 0.5; // 0 à 1
-              x = initialProjectile.left + randomOffsetX * localT;
-              y = initialProjectile.top - 40 * localT;
-              size = 20 * (1 - 0.5 * localT); // de 20 à 10 px
-            } else {
-              const localT = (t - 0.5) / 0.5; // 0 à 1
-              x = initialProjectile.left + randomOffsetX;
-              y = initialProjectile.top - 40 + (200 + randomOffsetY) * localT;
-              size = 10 * (1 - localT); // de 10 à 0
-            }
-
-            const clampedSize = Math.max(size, 2);
-            projectile.style.left = x + 'px';
-            projectile.style.top = y + 'px';
-            projectile.style.width = clampedSize + 'px';
-            projectile.style.height = clampedSize + 'px';
+          // ----- 3) BALLON : se dégonfle et tombe -----
+          let x, y, size;
+          if (t < 0.5) {
+            // phase 1 : encore près du cow-boy, commence à se dégonfler
+            const localT = t / 0.5; // 0 → 1
+            x = initialProjectile.left + randomOffsetX * 0.3 * localT;
+            y = initialProjectile.top - 40 * localT;
+            size = 20 * (1 - 0.5 * localT); // 20 → 10 px
+          } else {
+            // phase 2 : chute vers le sol, en continuant à se dégonfler
+            const localT = (t - 0.5) / 0.5; // 0 → 1
+            x = initialProjectile.left + randomOffsetX;
+            y = initialProjectile.top - 40 + (220 + randomOffsetY) * localT;
+            size = 10 * (1 - localT); // 10 → 0 px
           }
+          const clampedSize = Math.max(size, 2);
+          projectile.style.left = x + 'px';
+          projectile.style.top = y + 'px';
+          projectile.style.width = clampedSize + 'px';
+          projectile.style.height = clampedSize + 'px';
 
-          // On demande la frame suivante
           animationFrameId = requestAnimationFrame(step);
         } else {
-          // Fin de l'animation
+          // fin de l'animation : on repasse en mode Play, mais on laisse la scène telle quelle
           stopAnimation();
         }
       }
 
-      // On remet la scène à zéro et on lance la première frame
+      // On remet la scène à l'état initial avant de relancer un nouveau cycle
       resetScene();
       animationFrameId = requestAnimationFrame(step);
     }
 
-    // ===== ÉCOUTEURS D'ÉVÉNEMENTS =====
-
-    // Clic sur Play → lance ou arrête l'animation
+    // ===== ÉCOUTEURS =====
     btnPlay.addEventListener('click', playAnimation);
 
-    // Si on change les cases Action/Réaction alors que ça joue, on relance proprement
-    chkAction.addEventListener('change', () => {
-      if (isPlaying) {
-        stopAnimation();
-        playAnimation();
-      }
-    });
-
-    chkReaction.addEventListener('change', () => {
-      if (isPlaying) {
-        stopAnimation();
-        playAnimation();
-      }
-    });
+    // Les cases Action / Réaction ne changent plus le mouvement (elles seront utilisées pour les flèches)
   </script>
+
 
 
 
