@@ -16,12 +16,25 @@
       margin: 0 auto;
       border: 1px solid #ccc;
       overflow: hidden;
-      background: #fdfdfd;
+      background: #ffffff;
+    }
+    /* projectile (balle/jet de gaz) */
+    #projectile {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #8adf3c;
+      left: 430px;  /* à peu près au centre */
+      top: 450px;   /* près des pieds du cow-boy futur */
     }
   </style>
+
 </head>
 <body>
   <div id="scene">
+        <div id="projectile"></div>
+
     <!-- On ajoutera le cow-boy, la fusée et le projectile ici -->
   </div>
   <script>
