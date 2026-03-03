@@ -45,7 +45,7 @@
     /* ballon : image PNG avec fond transparent */
     #projectile {
       position: absolute;
-      width: 150px;   /* ballon encore plus grand au départ */
+      width: 150px;
       height: auto;
       left: 430px;
       top: 520px;
@@ -78,7 +78,6 @@
     .arrow {
       position: absolute;
       width: 10px;
-      background: red;
       transform-origin: center top;
       display: none;
     }
@@ -90,19 +89,38 @@
       bottom: -12px;
       border-left: 12px solid transparent;
       border-right: 12px solid transparent;
+    }
+
+    /* flèches rouges (action) */
+    .arrow-red {
+      background: red;
+    }
+    .arrow-red::after {
       border-top: 12px solid red;
     }
 
-    #arrowRocket {
+    /* flèches vertes (réaction) */
+    .arrow-green {
+      background: #00aa00;
+    }
+    .arrow-green::after {
+      border-top: 12px solid #00aa00;
+    }
+
+    #arrowRocket,
+    #arrowRocketR {
       height: 160px;
     }
 
     #arrowGunLeft,
-    #arrowGunRight {
+    #arrowGunRight,
+    #arrowGunLeftR,
+    #arrowGunRightR {
       height: 45px;
     }
 
-    #arrowBalloon {
+    #arrowBalloon,
+    #arrowBalloonR {
       height: 40px;
     }
   </style>
@@ -119,10 +137,17 @@
     <img id="cowboy" src="cowboy.png" alt="Cow-boy">
     <img id="rocket" src="rocket.png" alt="Fusée">
 
-    <div id="arrowRocket" class="arrow"></div>
-    <div id="arrowGunLeft" class="arrow"></div>
-    <div id="arrowGunRight" class="arrow"></div>
-    <div id="arrowBalloon" class="arrow"></div>
+    <!-- Flèches rouges (action) -->
+    <div id="arrowRocket" class="arrow arrow-red"></div>
+    <div id="arrowGunLeft" class="arrow arrow-red"></div>
+    <div id="arrowGunRight" class="arrow arrow-red"></div>
+    <div id="arrowBalloon" class="arrow arrow-red"></div>
+
+    <!-- Flèches vertes (réaction) -->
+    <div id="arrowRocketR" class="arrow arrow-green"></div>
+    <div id="arrowGunLeftR" class="arrow arrow-green"></div>
+    <div id="arrowGunRightR" class="arrow arrow-green"></div>
+    <div id="arrowBalloonR" class="arrow arrow-green"></div>
 
     <img id="projectile" src="balloon.PNG" alt="Ballon">
   </div>
@@ -140,10 +165,17 @@
     const cowboy = document.getElementById('cowboy');
     const rocket = document.getElementById('rocket');
 
+    // flèches rouges (action)
     const arrowRocket = document.getElementById('arrowRocket');
     const arrowGunLeft = document.getElementById('arrowGunLeft');
     const arrowGunRight = document.getElementById('arrowGunRight');
     const arrowBalloon = document.getElementById('arrowBalloon');
+
+    // flèches vertes (réaction)
+    const arrowRocketR = document.getElementById('arrowRocketR');
+    const arrowGunLeftR = document.getElementById('arrowGunLeftR');
+    const arrowGunRightR = document.getElementById('arrowGunRightR');
+    const arrowBalloonR = document.getElementById('arrowBalloonR');
 
     const duration = 3500;
 
@@ -176,10 +208,9 @@
       cowboy.style.bottom = initialCowboy.bottom + 'px';
       cowboy.src = 'cowboy.png';
 
-      arrowRocket.style.display = 'none';
-      arrowGunLeft.style.display = 'none';
-      arrowGunRight.style.display = 'none';
-      arrowBalloon.style.display = 'none';
+      [arrowRocket, arrowGunLeft, arrowGunRight, arrowBalloon,
+       arrowRocketR, arrowGunLeftR, arrowGunRightR, arrowBalloonR]
+        .forEach(a => a.style.display = 'none');
     }
 
     function stopAnimation() {
@@ -202,11 +233,13 @@
         const t = (now - startTime) / duration;
 
         if (t <= 1) {
+          // ===== Fusée =====
           const rocketTravel = 500;
           const rocketBottom = initialRocket.bottom + rocketTravel * t;
           rocket.style.bottom = rocketBottom + 'px';
           rocket.style.opacity = String(1 - 0.4 * t);
 
+          // ===== Cow-boy =====
           let cowboyBottom;
           if (t < 0.25) {
             const localT = t / 0.25;
@@ -221,17 +254,18 @@
           }
           cowboy.style.bottom = cowboyBottom + 'px';
 
-          // Ballon : montée plus haute (-180) et plus rapide
+          // ===== Ballon =====
           let x, y, size;
+          const rise = 180; // hauteur de montée
           if (t < 0.5) {
             const localT = t / 0.5;
             x = initialProjectile.left;
-            y = initialProjectile.top - 180 * localT;
+            y = initialProjectile.top - rise * localT;
             size = initialProjectile.width * (1 - 0.2 * localT);
             projectile.style.transform = 'rotate(0rad)';
           } else {
             const localT = (t - 0.5) / 0.5;
-            const fallY = initialProjectile.top - 180 + (250 + randomOffsetY) * localT;
+            const fallY = initialProjectile.top - rise + (250 + randomOffsetY) * localT;
             const zigzagAmplitude = 40;
             const zigzag = Math.sin(localT * Math.PI * 4) * zigzagAmplitude;
 
@@ -244,18 +278,36 @@
           projectile.style.top = y + 'px';
           projectile.style.width = clampedSize + 'px';
 
-          if (chkAction.checked) {
-            const sceneRect = scene.getBoundingClientRect();
+          // ===== Flèches =====
+          const sceneRect = scene.getBoundingClientRect();
 
-            // Flèche fusée : encore remontée (bottom - 0,55 L)
+          if (chkAction.checked || chkReaction.checked) {
+            // --- Fusée ---
             const rocketRect = rocket.getBoundingClientRect();
             const rocketCenterX = rocketRect.left + rocketRect.width / 2 - sceneRect.left;
             const rocketArrowHeight = parseFloat(getComputedStyle(arrowRocket).height);
             const rocketBaseY = rocketRect.bottom - sceneRect.top - 0.55 * rocketArrowHeight;
-            arrowRocket.style.left = (rocketCenterX - 5) + 'px';
-            arrowRocket.style.top = rocketBaseY + 'px';
-            arrowRocket.style.display = 'block';
 
+            if (chkAction.checked) {
+              arrowRocket.style.left = (rocketCenterX - 5) + 'px';
+              arrowRocket.style.top = rocketBaseY + 'px';
+              arrowRocket.style.transform = 'rotate(0rad)';
+              arrowRocket.style.display = 'block';
+            } else {
+              arrowRocket.style.display = 'none';
+            }
+
+            if (chkReaction.checked) {
+              // flèche verte opposée (vers le haut)
+              arrowRocketR.style.left = (rocketCenterX - 5) + 'px';
+              arrowRocketR.style.top = (rocketBaseY - rocketArrowHeight) + 'px';
+              arrowRocketR.style.transform = 'rotate(Math.PI rad)'; // vers le haut
+              arrowRocketR.style.display = 'block';
+            } else {
+              arrowRocketR.style.display = 'none';
+            }
+
+            // --- Pistolets ---
             const cowboyRect = cowboy.getBoundingClientRect();
             const cowboyBottomY = cowboyRect.bottom - sceneRect.top;
             const cowboyCenterX = cowboyRect.left + cowboyRect.width / 2 - sceneRect.left;
@@ -266,41 +318,81 @@
             const gunBaseY = cowboyBottomY - 1.5 * gunArrowHeight;
 
             if (t < 0.7) {
-              arrowGunLeft.style.display = 'block';
-              arrowGunRight.style.display = 'block';
-              arrowGunLeft.style.left = (leftGunX - 5) + 'px';
-              arrowGunLeft.style.top = gunBaseY + 'px';
-              arrowGunRight.style.left = (rightGunX - 5) + 'px';
-              arrowGunRight.style.top = gunBaseY + 'px';
+              if (chkAction.checked) {
+                arrowGunLeft.style.display = 'block';
+                arrowGunRight.style.display = 'block';
+                arrowGunLeft.style.left = (leftGunX - 5) + 'px';
+                arrowGunLeft.style.top = gunBaseY + 'px';
+                arrowGunLeft.style.transform = 'rotate(0rad)';
+                arrowGunRight.style.left = (rightGunX - 5) + 'px';
+                arrowGunRight.style.top = gunBaseY + 'px';
+                arrowGunRight.style.transform = 'rotate(0rad)';
+              } else {
+                arrowGunLeft.style.display = 'none';
+                arrowGunRight.style.display = 'none';
+              }
+
+              if (chkReaction.checked) {
+                // flèches vertes vers le haut
+                arrowGunLeftR.style.display = 'block';
+                arrowGunRightR.style.display = 'block';
+                arrowGunLeftR.style.left = (leftGunX - 5) + 'px';
+                arrowGunLeftR.style.top = (gunBaseY - gunArrowHeight) + 'px';
+                arrowGunLeftR.style.transform = 'rotate(Math.PI rad)';
+                arrowGunRightR.style.left = (rightGunX - 5) + 'px';
+                arrowGunRightR.style.top = (gunBaseY - gunArrowHeight) + 'px';
+                arrowGunRightR.style.transform = 'rotate(Math.PI rad)';
+              } else {
+                arrowGunLeftR.style.display = 'none';
+                arrowGunRightR.style.display = 'none';
+              }
             } else {
               arrowGunLeft.style.display = 'none';
               arrowGunRight.style.display = 'none';
+              arrowGunLeftR.style.display = 'none';
+              arrowGunRightR.style.display = 'none';
             }
 
+            // --- Ballon ---
             const projRect = projectile.getBoundingClientRect();
             const projCenterX = projRect.left + projRect.width / 2 - sceneRect.left;
             const projCenterY = projRect.top + projRect.height / 2 - sceneRect.top;
 
             if (t < 0.5) {
-              arrowBalloon.style.display = 'block';
-              arrowBalloon.style.left = (projCenterX - 5) + 'px';
-              arrowBalloon.style.top = projCenterY + 'px';
-              arrowBalloon.style.transform = 'rotate(0rad)';
+              const arrowTop = projCenterY;
+              if (chkAction.checked) {
+                arrowBalloon.style.display = 'block';
+                arrowBalloon.style.left = (projCenterX - 5) + 'px';
+                arrowBalloon.style.top = arrowTop + 'px';
+                arrowBalloon.style.transform = 'rotate(0rad)';
+              } else {
+                arrowBalloon.style.display = 'none';
+              }
+
+              if (chkReaction.checked) {
+                arrowBalloonR.style.display = 'block';
+                const h = parseFloat(getComputedStyle(arrowBalloonR).height);
+                arrowBalloonR.style.left = (projCenterX - 5) + 'px';
+                arrowBalloonR.style.top = (arrowTop - h) + 'px';
+                arrowBalloonR.style.transform = 'rotate(Math.PI rad)';
+              } else {
+                arrowBalloonR.style.display = 'none';
+              }
+
               projectile.style.transform = 'rotate(0rad)';
             } else {
-              arrowBalloon.style.display = 'block';
-
               const dt = 0.01;
               const tAhead = Math.min(t + dt, 1);
               let xAhead, yAhead;
+              const rise = 180;
 
               if (tAhead < 0.5) {
                 const localT = tAhead / 0.5;
                 xAhead = initialProjectile.left;
-                yAhead = initialProjectile.top - 180 * localT;
+                yAhead = initialProjectile.top - rise * localT;
               } else {
                 const localT = (tAhead - 0.5) / 0.5;
-                const fallY2 = initialProjectile.top - 180 + (250 + randomOffsetY) * localT;
+                const fallY2 = initialProjectile.top - rise + (250 + randomOffsetY) * localT;
                 const zigzagAmplitude2 = 40;
                 const zigzag2 = Math.sin(localT * Math.PI * 4) * zigzagAmplitude2;
                 xAhead = initialProjectile.left + randomOffsetX + zigzag2;
@@ -312,16 +404,33 @@
               const angleMove = Math.atan2(dy, dx);
               const angleArrow = angleMove + Math.PI;
 
-              arrowBalloon.style.left = (projCenterX - 5) + 'px';
-              arrowBalloon.style.top = projCenterY + 'px';
-              arrowBalloon.style.transform = 'rotate(' + angleArrow + 'rad)';
+              if (chkAction.checked) {
+                arrowBalloon.style.display = 'block';
+                arrowBalloon.style.left = (projCenterX - 5) + 'px';
+                arrowBalloon.style.top = projCenterY + 'px';
+                arrowBalloon.style.transform = 'rotate(' + angleArrow + 'rad)';
+              } else {
+                arrowBalloon.style.display = 'none';
+              }
+
+              if (chkReaction.checked) {
+                arrowBalloonR.style.display = 'block';
+                const h = parseFloat(getComputedStyle(arrowBalloonR).height);
+                // flèche verte opposée (direction du mouvement)
+                const angleOpp = angleMove; // opposée à la rouge
+                arrowBalloonR.style.left = (projCenterX - 5) + 'px';
+                arrowBalloonR.style.top = (projCenterY - h) + 'px';
+                arrowBalloonR.style.transform = 'rotate(' + angleOpp + 'rad)';
+              } else {
+                arrowBalloonR.style.display = 'none';
+              }
+
               projectile.style.transform = 'rotate(' + angleArrow + 'rad)';
             }
           } else {
-            arrowRocket.style.display = 'none';
-            arrowGunLeft.style.display = 'none';
-            arrowGunRight.style.display = 'none';
-            arrowBalloon.style.display = 'none';
+            [arrowRocket, arrowGunLeft, arrowGunRight, arrowBalloon,
+             arrowRocketR, arrowGunLeftR, arrowGunRightR, arrowBalloonR]
+              .forEach(a => a.style.display = 'none');
           }
 
           animationFrameId = requestAnimationFrame(step);
