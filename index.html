@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Principe d'action-réaction</title>
+
+ <!-- ===== DEBUT STYLE ANIMATION ACTION/RÉACTION ===================================================================== -->  
   <style>
     body {
       margin: 0;
@@ -108,6 +110,9 @@
 
   </style>
 
+ <!-- ===== FIN STYLE ANIMATION ACTION/RÉACTION ===================================================================== -->
+
+  
 </head>
 <body>
   <div id="controls">
@@ -138,6 +143,10 @@
     Virginie Fourcassier – Lycée Pierre de Fermat – Toulouse
   </div>
 
+
+
+ <!-- ===== DEBUT SCRIPT ANIMATION ACTION/RÉACTION ===================================================================== --> 
+  
   <script>
     // ===== RÉFÉRENCES AUX ÉLÉMENTS HTML =====
     const projectile = document.getElementById('projectile');   // ballon / balle
@@ -147,6 +156,14 @@
     const cowboy = document.getElementById('cowboy');           // image du cow-boy
     const rocket = document.getElementById('rocket');           // image de la fusée
 
+// Flèches d'action (rouges)
+    const arrowRocket = document.getElementById('arrowRocket');
+    const arrowGunLeft = document.getElementById('arrowGunLeft');
+    const arrowGunRight = document.getElementById('arrowGunRight');
+    const arrowBalloon = document.getElementById('arrowBalloon');
+
+
+    
     // ===== PARAMÈTRES GÉNÉRAUX =====
     const duration = 2500; // durée d'une séquence (ms)
 
@@ -179,7 +196,18 @@
       rocket.style.top = initialRocket.top + 'px';
 
       cowboy.style.bottom = initialCowboy.bottom + 'px';
+      cowboy.style.bottom = initialCowboy.bottom + 'px';
+
+      updateActionArrowsVisibility(); // met à jour la visibilité des flèches
     }
+// Affiche ou cache les flèches rouges selon la case "Action"
+function updateActionArrowsVisibility() {
+  const display = chkAction.checked ? 'block' : 'none';
+  arrowRocket.style.display = display;
+  arrowGunLeft.style.display = display;
+  arrowGunRight.style.display = display;
+  arrowBalloon.style.display = display;
+}
 
     // Stop : on arrête l'animation où elle est, sans reset
     function stopAnimation() {
@@ -275,11 +303,18 @@
 
     // ===== ÉCOUTEURS =====
     btnPlay.addEventListener('click', playAnimation);
+// On initialise la visibilité des flèches au chargement
+updateActionArrowsVisibility();
+
+// Quand on coche/décoche "Action", on ne touche pas au mouvement, seulement aux flèches
+chkAction.addEventListener('change', () => {
+  updateActionArrowsVisibility();
+});
 
     // Les cases Action / Réaction ne changent plus le mouvement (elles seront utilisées pour les flèches)
   </script>
 
-
+ <!-- ===== FIN SCRIPT ANIMATION ACTION/RÉACTION ===================================================================== --> 
 
 
 </body>
