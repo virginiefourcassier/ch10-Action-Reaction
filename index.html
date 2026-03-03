@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Principe d'action-réaction</title>
 
-  <!-- ===== DÉBUT STYLE ANIMATION ACTION/RÉACTION ===== -->
   <style>
     body {
       margin: 0;
@@ -46,11 +45,11 @@
     /* ballon : image PNG avec fond transparent */
     #projectile {
       position: absolute;
-      width: 90px;   /* ballon plus grand au départ */
+      width: 110px;   /* ballon plus grand */
       height: auto;
       left: 430px;
       top: 520px;
-      transform-origin: center center;  /* pour les rotations */
+      transform-origin: center center;
     }
 
     #cowboy {
@@ -76,7 +75,6 @@
       color: #555;
     }
 
-    /* ===== FLÈCHES D'ACTION (ROUGES) ===== */
     .arrow {
       position: absolute;
       width: 10px;
@@ -108,8 +106,6 @@
       height: 40px;
     }
   </style>
-  <!-- ===== FIN STYLE ANIMATION ACTION/RÉACTION ===== -->
-
 </head>
 <body>
 
@@ -123,13 +119,11 @@
     <img id="cowboy" src="cowboy.png" alt="Cow-boy">
     <img id="rocket" src="rocket.png" alt="Fusée">
 
-    <!-- Flèches rouges d'action -->
     <div id="arrowRocket" class="arrow"></div>
     <div id="arrowGunLeft" class="arrow"></div>
     <div id="arrowGunRight" class="arrow"></div>
     <div id="arrowBalloon" class="arrow"></div>
 
-    <!-- ballon image -->
     <img id="projectile" src="balloon.PNG" alt="Ballon">
   </div>
 
@@ -137,7 +131,6 @@
     Virginie Fourcassier – Lycée Pierre de Fermat – Toulouse
   </div>
 
-  <!-- ===== DÉBUT SCRIPT ANIMATION ACTION/RÉACTION ===== -->
   <script>
     const scene = document.getElementById('scene');
     const projectile = document.getElementById('projectile');
@@ -209,13 +202,11 @@
         const t = (now - startTime) / duration;
 
         if (t <= 1) {
-          // ===== Fusée =====
           const rocketTravel = 500;
           const rocketBottom = initialRocket.bottom + rocketTravel * t;
           rocket.style.bottom = rocketBottom + 'px';
           rocket.style.opacity = String(1 - 0.4 * t);
 
-          // ===== Cow-boy (montée / descente + changement d'image) =====
           let cowboyBottom;
           if (t < 0.25) {
             const localT = t / 0.25;
@@ -230,17 +221,17 @@
           }
           cowboy.style.bottom = cowboyBottom + 'px';
 
-          // ===== Ballon : montée puis descente en zigzag + rotation =====
+          // Ballon : montée plus haute (-100) et plus grand
           let x, y, size;
           if (t < 0.5) {
             const localT = t / 0.5;
             x = initialProjectile.left;
-            y = initialProjectile.top - 70 * localT;
+            y = initialProjectile.top - 100 * localT;   // montée augmentée
             size = initialProjectile.width * (1 - 0.2 * localT);
-            projectile.style.transform = 'rotate(0rad)'; // ballon vertical à la montée
+            projectile.style.transform = 'rotate(0rad)';
           } else {
             const localT = (t - 0.5) / 0.5;
-            const fallY = initialProjectile.top - 70 + (250 + randomOffsetY) * localT;
+            const fallY = initialProjectile.top - 100 + (250 + randomOffsetY) * localT;
             const zigzagAmplitude = 40;
             const zigzag = Math.sin(localT * Math.PI * 4) * zigzagAmplitude;
 
@@ -253,21 +244,19 @@
           projectile.style.top = y + 'px';
           projectile.style.width = clampedSize + 'px';
 
-          // ===== Flèches (Action) =====
           if (chkAction.checked) {
             const sceneRect = scene.getBoundingClientRect();
 
-            // --- Flèche fusée : légèrement sous la base ---
+            // Flèche fusée : encore remontée (bottom - 0,25 L)
             const rocketRect = rocket.getBoundingClientRect();
             const rocketCenterX = rocketRect.left + rocketRect.width / 2 - sceneRect.left;
             const rocketArrowHeight = parseFloat(getComputedStyle(arrowRocket).height);
-            // haut de flèche = bottom_fusée - 0,15 L  (L = hauteur flèche)
-            const rocketBaseY = rocketRect.bottom - sceneRect.top - 0.15 * rocketArrowHeight;
+            const rocketBaseY = rocketRect.bottom - sceneRect.top - 0.25 * rocketArrowHeight;
             arrowRocket.style.left = (rocketCenterX - 5) + 'px';
             arrowRocket.style.top = rocketBaseY + 'px';
             arrowRocket.style.display = 'block';
 
-            // --- Flèches pistolets ---
+            // Flèches pistolets
             const cowboyRect = cowboy.getBoundingClientRect();
             const cowboyBottomY = cowboyRect.bottom - sceneRect.top;
             const cowboyCenterX = cowboyRect.left + cowboyRect.width / 2 - sceneRect.left;
@@ -289,7 +278,7 @@
               arrowGunRight.style.display = 'none';
             }
 
-            // --- Flèche ballon + rotation cohérente du ballon ---
+            // Flèche ballon + rotation comme précédemment
             const projRect = projectile.getBoundingClientRect();
             const projCenterX = projRect.left + projRect.width / 2 - sceneRect.left;
             const projCenterY = projRect.top + projRect.height / 2 - sceneRect.top;
@@ -310,10 +299,10 @@
               if (tAhead < 0.5) {
                 const localT = tAhead / 0.5;
                 xAhead = initialProjectile.left;
-                yAhead = initialProjectile.top - 70 * localT;
+                yAhead = initialProjectile.top - 100 * localT;
               } else {
                 const localT = (tAhead - 0.5) / 0.5;
-                const fallY2 = initialProjectile.top - 70 + (250 + randomOffsetY) * localT;
+                const fallY2 = initialProjectile.top - 100 + (250 + randomOffsetY) * localT;
                 const zigzagAmplitude2 = 40;
                 const zigzag2 = Math.sin(localT * Math.PI * 4) * zigzagAmplitude2;
                 xAhead = initialProjectile.left + randomOffsetX + zigzag2;
@@ -323,15 +312,12 @@
               const dx = xAhead - x;
               const dy = yAhead - y;
               const angleMove = Math.atan2(dy, dx);
-              const angleArrow = angleMove + Math.PI;      // flèche opposée au mouvement
-              const angleBalloon = angleArrow;             // ballon aligné avec la flèche
+              const angleArrow = angleMove + Math.PI;
 
               arrowBalloon.style.left = (projCenterX - 5) + 'px';
               arrowBalloon.style.top = projCenterY + 'px';
               arrowBalloon.style.transform = 'rotate(' + angleArrow + 'rad)';
-
-              // rotation du ballon pour que le nœud suive la flèche
-              projectile.style.transform = 'rotate(' + angleBalloon + 'rad)';
+              projectile.style.transform = 'rotate(' + angleArrow + 'rad)';
             }
           } else {
             arrowRocket.style.display = 'none';
@@ -368,7 +354,6 @@
     btnPlay.addEventListener('click', playAnimation);
     resetScene();
   </script>
-  <!-- ===== FIN SCRIPT ANIMATION ACTION/RÉACTION ===== -->
 
 </body>
 </html>
