@@ -80,28 +80,29 @@
     /* ===== FLÈCHES D'ACTION (ROUGES) ===== */
     .arrow {
       position: absolute;
-      width: 6px;              /* largeur du trait */
+      width: 10px;              /* flèches plus épaisses */
       background: red;
       transform-origin: center top;
+      display: none;            /* cachées au départ */
     }
 
     .arrow::after {
       content: "";
       position: absolute;
-      left: -7px;
-      bottom: -10px;
-      border-left: 10px solid transparent;
-      border-right: 10px solid transparent;
-      border-top: 10px solid red; /* pointe vers le bas */
+      left: -9px;
+      bottom: -12px;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-top: 12px solid red; /* pointe vers le bas */
     }
 
     #arrowRocket {
-      height: 120px;  /* longueur sous la fusée */
+      height: 140px;  /* longueur sous la fusée */
     }
 
     #arrowGunLeft,
     #arrowGunRight {
-      height: 60px;   /* flèches pour les pistolets */
+      height: 45px;   /* flèches un peu plus petites pour les pistolets */
     }
 
     #arrowBalloon {
@@ -242,7 +243,7 @@
           rocket.style.top = rocketY + 'px';
           rocket.style.opacity = String(1 - 0.3 * t);
 
-          // ----- COW-BOY : vacille, monte un peu, puis redescend -----
+          // ----- COW-BOY : vacille, monte plus haut, puis redescend -----
           let cowboyBottom;
           if (t < 0.25) {
             const localT = t / 0.25;
@@ -250,7 +251,7 @@
             cowboyBottom = initialCowboy.bottom + wobble;
           } else {
             const localT = (t - 0.25) / 0.75;
-            const jump = 60 * (1 - Math.pow(2 * localT - 1, 2));
+            const jump = 90 * (1 - Math.pow(2 * localT - 1, 2)); // 90 px au lieu de 60
             cowboyBottom = initialCowboy.bottom + jump;
           }
           cowboy.style.bottom = cowboyBottom + 'px';
@@ -278,36 +279,36 @@
           if (chkAction.checked) {
             const sceneRect = scene.getBoundingClientRect();
 
-            // 1) Flèche fusée : on remonte pour atteindre la base visible
+            // 1) Flèche fusée : base réelle (au-dessus des flammes)
             const rocketRect = rocket.getBoundingClientRect();
             const rocketCenterX = rocketRect.left + rocketRect.width / 2 - sceneRect.left;
-            const rocketBaseOffset = 260; // à ajuster si besoin
+            const rocketBaseOffset = 310; // valeur plus grande pour remonter la base
             const rocketBaseY = rocketRect.bottom - sceneRect.top - rocketBaseOffset;
-            arrowRocket.style.left = (rocketCenterX - 3) + 'px';
+            arrowRocket.style.left = (rocketCenterX - 5) + 'px'; // -5 car flèche plus épaisse
             arrowRocket.style.top = rocketBaseY + 'px';
 
-            // 2) Flèches pistolets : autour des pieds du cow-boy, avec offsets
+            // 2) Flèches pistolets : base des pistolets (au niveau des flammes)
             const cowboyRect = cowboy.getBoundingClientRect();
             const cowboyBottomY = cowboyRect.bottom - sceneRect.top;
             const cowboyCenterX = cowboyRect.left + cowboyRect.width / 2 - sceneRect.left;
 
             const gunOffsetX = 55;  // distance depuis le centre vers chaque pistolet
-            const gunOffsetY = 0;   // pour monter/descendre les flèches si besoin
+            const gunOffsetY = -20; // remonter pour atteindre la base des pistolets
 
             const leftGunX = cowboyCenterX - gunOffsetX;
             const rightGunX = cowboyCenterX + gunOffsetX;
 
-            arrowGunLeft.style.left = (leftGunX - 3) + 'px';
+            arrowGunLeft.style.left = (leftGunX - 5) + 'px';
             arrowGunLeft.style.top = (cowboyBottomY + gunOffsetY) + 'px';
 
-            arrowGunRight.style.left = (rightGunX - 3) + 'px';
+            arrowGunRight.style.left = (rightGunX - 5) + 'px';
             arrowGunRight.style.top = (cowboyBottomY + gunOffsetY) + 'px';
 
             // 3) Flèche ballon : sous le ballon
             const projRect = projectile.getBoundingClientRect();
             const projCenterX = projRect.left + projRect.width / 2 - sceneRect.left;
             const projBottomY = projRect.bottom - sceneRect.top;
-            arrowBalloon.style.left = (projCenterX - 3) + 'px';
+            arrowBalloon.style.left = (projCenterX - 5) + 'px';
             arrowBalloon.style.top = projBottomY + 'px';
           }
 
