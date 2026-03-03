@@ -15,7 +15,7 @@
     #scene {
       position: relative;
       width: 900px;
-      height: 750px;          /* scène haute pour la fusée */
+      height: 750px;
       margin: 0 auto;
       border: 1px solid #ccc;
       overflow: hidden;
@@ -79,10 +79,10 @@
     /* ===== FLÈCHES D'ACTION (ROUGES) ===== */
     .arrow {
       position: absolute;
-      width: 10px;              /* flèches épaisses */
+      width: 10px;
       background: red;
       transform-origin: center top;
-      display: none;            /* cachées par défaut */
+      display: none;
     }
 
     .arrow::after {
@@ -92,20 +92,20 @@
       bottom: -12px;
       border-left: 12px solid transparent;
       border-right: 12px solid transparent;
-      border-top: 12px solid red; /* pointe vers le bas */
+      border-top: 12px solid red;
     }
 
     #arrowRocket {
-      height: 160px;  /* longueur de la flèche de la fusée */
+      height: 160px;
     }
 
     #arrowGunLeft,
     #arrowGunRight {
-      height: 45px;   /* flèches pour les pistolets */
+      height: 45px;
     }
 
     #arrowBalloon {
-      height: 40px;   /* flèche pour le ballon */
+      height: 40px;
     }
   </style>
   <!-- ===== FIN STYLE ANIMATION ACTION/RÉACTION ===== -->
@@ -115,7 +115,6 @@
 
   <div id="controls">
     <button id="btnPlay">Play</button>
-    <!-- Action NON cochée au départ -->
     <label><input type="checkbox" id="chkAction"> Action</label>
     <label><input type="checkbox" id="chkReaction"> Réaction</label>
   </div>
@@ -130,8 +129,8 @@
     <div id="arrowGunRight" class="arrow"></div>
     <div id="arrowBalloon" class="arrow"></div>
 
-    <!-- ballon image : IMPORTANT, garde exactement ce nom de fichier -->
-    <img id="projectile" src="balloon.png" alt="Ballon">
+    <!-- ballon image : respecte exactement le nom balloon.PNG -->
+    <img id="projectile" src="balloon.PNG" alt="Ballon">
   </div>
 
   <div id="signature">
@@ -140,11 +139,10 @@
 
   <!-- ===== DÉBUT SCRIPT ANIMATION ACTION/RÉACTION ===== -->
   <script>
-    // ===== 1. RÉFÉRENCES AUX ÉLÉMENTS HTML =====
     const scene = document.getElementById('scene');
-    const projectile = document.getElementById('projectile');   // ballon image
-    const chkAction = document.getElementById('chkAction');     // case "Action"
-    const chkReaction = document.getElementById('chkReaction'); // case "Réaction"
+    const projectile = document.getElementById('projectile');
+    const chkAction = document.getElementById('chkAction');
+    const chkReaction = document.getElementById('chkReaction');
     const btnPlay = document.getElementById('btnPlay');
     const cowboy = document.getElementById('cowboy');
     const rocket = document.getElementById('rocket');
@@ -154,7 +152,6 @@
     const arrowGunRight = document.getElementById('arrowGunRight');
     const arrowBalloon = document.getElementById('arrowBalloon');
 
-    // ===== 2. PARAMÈTRES =====
     const duration = 3500;
 
     const initialProjectile = {
@@ -173,7 +170,6 @@
     let isPlaying = false;
     let animationFrameId = null;
 
-    // ===== 3. OUTILS =====
     function resetScene() {
       projectile.style.left = initialProjectile.left + 'px';
       projectile.style.top = initialProjectile.top + 'px';
@@ -200,7 +196,6 @@
       }
     }
 
-    // ===== 4. ANIMATION PRINCIPALE (avec boucle) =====
     function startCycle() {
       const startTime = performance.now();
       const randomOffsetX = (Math.random() - 0.5) * 100;
@@ -257,13 +252,13 @@
           if (chkAction.checked) {
             const sceneRect = scene.getBoundingClientRect();
 
-            // 1) Flèche fusée : juste sous la base
+            // 1) Flèche fusée : remonter sous la base
             const rocketRect = rocket.getBoundingClientRect();
             const rocketCenterX = rocketRect.left + rocketRect.width / 2 - sceneRect.left;
             const rocketArrowHeight = parseFloat(getComputedStyle(arrowRocket).height);
 
-            // On place le haut de la flèche à bottom_fusée + 0,1 L (L = hauteur flèche)
-            const rocketBaseY = rocketRect.bottom - sceneRect.top + 0.1 * rocketArrowHeight;
+            // haut de flèche = bottom_fusée - 0,4 L (L = hauteur flèche)
+            const rocketBaseY = rocketRect.bottom - sceneRect.top - 0.4 * rocketArrowHeight;
 
             arrowRocket.style.left = (rocketCenterX - 5) + 'px';
             arrowRocket.style.top = rocketBaseY + 'px';
@@ -362,7 +357,6 @@
       startCycle();
     }
 
-    // ===== 5. ÉCOUTEURS =====
     btnPlay.addEventListener('click', playAnimation);
     resetScene();
   </script>
