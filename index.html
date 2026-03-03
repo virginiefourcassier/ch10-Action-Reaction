@@ -50,6 +50,7 @@
       left: 430px;
       top: 520px;
       transform-origin: center center;
+      z-index: 5;
     }
 
     #cowboy {
@@ -80,6 +81,7 @@
       width: 10px;
       transform-origin: center top;
       display: none;
+      z-index: 10;          /* flèches devant le ballon */
     }
 
     .arrow::after {
@@ -277,11 +279,10 @@
           projectile.style.top = y + 'px';
           projectile.style.width = clampedSize + 'px';
 
-          // ===== Flèches =====
           const sceneRect = scene.getBoundingClientRect();
 
           if (chkAction.checked || chkReaction.checked) {
-            // --- Fusée ---
+            // === Fusée ===
             const rocketRect = rocket.getBoundingClientRect();
             const rocketCenterX = rocketRect.left + rocketRect.width / 2 - sceneRect.left;
             const rocketArrowHeight = parseFloat(getComputedStyle(arrowRocket).height);
@@ -290,23 +291,18 @@
             if (chkAction.checked) {
               arrowRocket.style.left = (rocketCenterX - 5) + 'px';
               arrowRocket.style.top = rocketBaseY + 'px';
-              arrowRocket.style.transform = 'rotate(0rad)'; // vers le bas
+              arrowRocket.style.transform = 'rotate(0rad)';
               arrowRocket.style.display = 'block';
-            } else {
-              arrowRocket.style.display = 'none';
-            }
+            } else arrowRocket.style.display = 'none';
 
             if (chkReaction.checked) {
-              // flèche verte vers le haut, collée à la rouge (base commune)
               arrowRocketR.style.left = (rocketCenterX - 5) + 'px';
               arrowRocketR.style.top = rocketBaseY + 'px';
-              arrowRocketR.style.transform = 'rotate(3.14159rad)'; // vers le haut
+              arrowRocketR.style.transform = 'rotate(3.14159rad)';
               arrowRocketR.style.display = 'block';
-            } else {
-              arrowRocketR.style.display = 'none';
-            }
+            } else arrowRocketR.style.display = 'none';
 
-            // --- Pistolets ---
+            // === Pistolets ===
             const cowboyRect = cowboy.getBoundingClientRect();
             const cowboyBottomY = cowboyRect.bottom - sceneRect.top;
             const cowboyCenterX = cowboyRect.left + cowboyRect.width / 2 - sceneRect.left;
@@ -322,7 +318,7 @@
                 arrowGunRight.style.display = 'block';
                 arrowGunLeft.style.left = (leftGunX - 5) + 'px';
                 arrowGunLeft.style.top = gunBaseY + 'px';
-                arrowGunLeft.style.transform = 'rotate(0rad)'; // bas
+                arrowGunLeft.style.transform = 'rotate(0rad)';
                 arrowGunRight.style.left = (rightGunX - 5) + 'px';
                 arrowGunRight.style.top = gunBaseY + 'px';
                 arrowGunRight.style.transform = 'rotate(0rad)';
@@ -334,7 +330,6 @@
               if (chkReaction.checked) {
                 arrowGunLeftR.style.display = 'block';
                 arrowGunRightR.style.display = 'block';
-                // même base que les rouges, mais vers le haut
                 arrowGunLeftR.style.left = (leftGunX - 5) + 'px';
                 arrowGunLeftR.style.top = gunBaseY + 'px';
                 arrowGunLeftR.style.transform = 'rotate(3.14159rad)';
@@ -352,32 +347,30 @@
               arrowGunRightR.style.display = 'none';
             }
 
-            // --- Ballon ---
+            // === Ballon ===
             const projRect = projectile.getBoundingClientRect();
             const projCenterX = projRect.left + projRect.width / 2 - sceneRect.left;
             const projCenterY = projRect.top + projRect.height / 2 - sceneRect.top;
 
+            // position approximative du nœud : un peu sous le centre
+            const knotOffsetY = projRect.height * 0.25;
+            const knotX = projCenterX;
+            const knotY = projCenterY + knotOffsetY;
+
             if (t < 0.5) {
-              const arrowTop = projCenterY;
               if (chkAction.checked) {
                 arrowBalloon.style.display = 'block';
-                arrowBalloon.style.left = (projCenterX - 5) + 'px';
-                arrowBalloon.style.top = arrowTop + 'px';
+                arrowBalloon.style.left = (knotX - 5) + 'px';
+                arrowBalloon.style.top = knotY + 'px';
                 arrowBalloon.style.transform = 'rotate(0rad)';
-              } else {
-                arrowBalloon.style.display = 'none';
-              }
+              } else arrowBalloon.style.display = 'none';
 
               if (chkReaction.checked) {
-                // même base que la flèche rouge, vers le haut
-                const h = parseFloat(getComputedStyle(arrowBalloonR).height);
                 arrowBalloonR.style.display = 'block';
-                arrowBalloonR.style.left = (projCenterX - 5) + 'px';
-                arrowBalloonR.style.top = arrowTop + 'px';
+                arrowBalloonR.style.left = (knotX - 5) + 'px';
+                arrowBalloonR.style.top = knotY + 'px';
                 arrowBalloonR.style.transform = 'rotate(3.14159rad)';
-              } else {
-                arrowBalloonR.style.display = 'none';
-              }
+              } else arrowBalloonR.style.display = 'none';
 
               projectile.style.transform = 'rotate(0rad)';
             } else {
@@ -401,27 +394,22 @@
               const dx = xAhead - x;
               const dy = yAhead - y;
               const angleMove = Math.atan2(dy, dx);
-              const angleRed = angleMove + Math.PI; // rouge opposée au mouvement
-              const angleGreen = angleMove;         // verte opposée à la rouge
+              const angleRed = angleMove + Math.PI; // rouge
+              const angleGreen = angleMove;         // verte
 
               if (chkAction.checked) {
                 arrowBalloon.style.display = 'block';
-                arrowBalloon.style.left = (projCenterX - 5) + 'px';
-                arrowBalloon.style.top = projCenterY + 'px';
+                arrowBalloon.style.left = (knotX - 5) + 'px';
+                arrowBalloon.style.top = knotY + 'px';
                 arrowBalloon.style.transform = 'rotate(' + angleRed + 'rad)';
-              } else {
-                arrowBalloon.style.display = 'none';
-              }
+              } else arrowBalloon.style.display = 'none';
 
               if (chkReaction.checked) {
-                // même base que la rouge
                 arrowBalloonR.style.display = 'block';
-                arrowBalloonR.style.left = (projCenterX - 5) + 'px';
-                arrowBalloonR.style.top = projCenterY + 'px';
+                arrowBalloonR.style.left = (knotX - 5) + 'px';
+                arrowBalloonR.style.top = knotY + 'px';
                 arrowBalloonR.style.transform = 'rotate(' + angleGreen + 'rad)';
-              } else {
-                arrowBalloonR.style.display = 'none';
-              }
+              } else arrowBalloonR.style.display = 'none';
 
               projectile.style.transform = 'rotate(' + angleRed + 'rad)';
             }
