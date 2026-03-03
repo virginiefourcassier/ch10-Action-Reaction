@@ -45,7 +45,7 @@
     /* ballon : image PNG avec fond transparent */
     #projectile {
       position: absolute;
-      width: 110px;   /* ballon plus grand */
+      width: 130px;   /* ballon encore plus grand au départ */
       height: auto;
       left: 430px;
       top: 520px;
@@ -221,17 +221,17 @@
           }
           cowboy.style.bottom = cowboyBottom + 'px';
 
-          // Ballon : montée plus haute (-100) et plus grand
+          // Ballon : montée plus haute (-140) et plus rapide (même durée globale)
           let x, y, size;
           if (t < 0.5) {
             const localT = t / 0.5;
             x = initialProjectile.left;
-            y = initialProjectile.top - 100 * localT;   // montée augmentée
+            y = initialProjectile.top - 140 * localT;
             size = initialProjectile.width * (1 - 0.2 * localT);
             projectile.style.transform = 'rotate(0rad)';
           } else {
             const localT = (t - 0.5) / 0.5;
-            const fallY = initialProjectile.top - 100 + (250 + randomOffsetY) * localT;
+            const fallY = initialProjectile.top - 140 + (250 + randomOffsetY) * localT;
             const zigzagAmplitude = 40;
             const zigzag = Math.sin(localT * Math.PI * 4) * zigzagAmplitude;
 
@@ -247,16 +247,15 @@
           if (chkAction.checked) {
             const sceneRect = scene.getBoundingClientRect();
 
-            // Flèche fusée : encore remontée (bottom - 0,25 L)
+            // Flèche fusée : encore remontée (bottom - 0,35 L)
             const rocketRect = rocket.getBoundingClientRect();
             const rocketCenterX = rocketRect.left + rocketRect.width / 2 - sceneRect.left;
             const rocketArrowHeight = parseFloat(getComputedStyle(arrowRocket).height);
-            const rocketBaseY = rocketRect.bottom - sceneRect.top - 0.25 * rocketArrowHeight;
+            const rocketBaseY = rocketRect.bottom - sceneRect.top - 0.35 * rocketArrowHeight;
             arrowRocket.style.left = (rocketCenterX - 5) + 'px';
             arrowRocket.style.top = rocketBaseY + 'px';
             arrowRocket.style.display = 'block';
 
-            // Flèches pistolets
             const cowboyRect = cowboy.getBoundingClientRect();
             const cowboyBottomY = cowboyRect.bottom - sceneRect.top;
             const cowboyCenterX = cowboyRect.left + cowboyRect.width / 2 - sceneRect.left;
@@ -278,7 +277,6 @@
               arrowGunRight.style.display = 'none';
             }
 
-            // Flèche ballon + rotation comme précédemment
             const projRect = projectile.getBoundingClientRect();
             const projCenterX = projRect.left + projRect.width / 2 - sceneRect.left;
             const projCenterY = projRect.top + projRect.height / 2 - sceneRect.top;
@@ -299,10 +297,10 @@
               if (tAhead < 0.5) {
                 const localT = tAhead / 0.5;
                 xAhead = initialProjectile.left;
-                yAhead = initialProjectile.top - 100 * localT;
+                yAhead = initialProjectile.top - 140 * localT;
               } else {
                 const localT = (tAhead - 0.5) / 0.5;
-                const fallY2 = initialProjectile.top - 100 + (250 + randomOffsetY) * localT;
+                const fallY2 = initialProjectile.top - 140 + (250 + randomOffsetY) * localT;
                 const zigzagAmplitude2 = 40;
                 const zigzag2 = Math.sin(localT * Math.PI * 4) * zigzagAmplitude2;
                 xAhead = initialProjectile.left + randomOffsetX + zigzag2;
