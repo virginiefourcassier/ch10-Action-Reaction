@@ -130,7 +130,7 @@
     <div id="arrowGunRight" class="arrow"></div>
     <div id="arrowBalloon" class="arrow"></div>
 
-    <!-- ballon image -->
+    <!-- ballon image : IMPORTANT, garde exactement ce nom de fichier -->
     <img id="projectile" src="balloon.png" alt="Ballon">
   </div>
 
@@ -144,19 +144,18 @@
     const scene = document.getElementById('scene');
     const projectile = document.getElementById('projectile');   // ballon image
     const chkAction = document.getElementById('chkAction');     // case "Action"
-    const chkReaction = document.getElementById('chkReaction'); // case "Réaction" (servira pour les flèches vertes)
-    const btnPlay = document.getElementById('btnPlay');         // bouton Play/Stop
-    const cowboy = document.getElementById('cowboy');           // image du cow-boy
-    const rocket = document.getElementById('rocket');           // image de la fusée
+    const chkReaction = document.getElementById('chkReaction'); // case "Réaction"
+    const btnPlay = document.getElementById('btnPlay');
+    const cowboy = document.getElementById('cowboy');
+    const rocket = document.getElementById('rocket');
 
-    // Flèches d'action (rouges)
     const arrowRocket = document.getElementById('arrowRocket');
     const arrowGunLeft = document.getElementById('arrowGunLeft');
     const arrowGunRight = document.getElementById('arrowGunRight');
     const arrowBalloon = document.getElementById('arrowBalloon');
 
-    // ===== 2. PARAMÈTRES GÉNÉRAUX =====
-    const duration = 3500; // durée d'une séquence (ms)
+    // ===== 2. PARAMÈTRES =====
+    const duration = 3500;
 
     const initialProjectile = {
       left: parseFloat(getComputedStyle(projectile).left),
@@ -201,7 +200,7 @@
       }
     }
 
-    // ===== 4. ANIMATION PRINCIPALE (mouvement + boucle) =====
+    // ===== 4. ANIMATION PRINCIPALE (avec boucle) =====
     function startCycle() {
       const startTime = performance.now();
       const randomOffsetX = (Math.random() - 0.5) * 100;
@@ -258,19 +257,19 @@
           if (chkAction.checked) {
             const sceneRect = scene.getBoundingClientRect();
 
-            // 1) Flèche fusée : sous la fusée (vers les gaz)
+            // 1) Flèche fusée : juste sous la base
             const rocketRect = rocket.getBoundingClientRect();
             const rocketCenterX = rocketRect.left + rocketRect.width / 2 - sceneRect.left;
-
             const rocketArrowHeight = parseFloat(getComputedStyle(arrowRocket).height);
-            // ICI on DESCEND : base = bas de la fusée + 1,4 × hauteur flèche
-            const rocketBaseY = rocketRect.bottom - sceneRect.top + 1.4 * rocketArrowHeight;
+
+            // On place le haut de la flèche à bottom_fusée + 0,1 L (L = hauteur flèche)
+            const rocketBaseY = rocketRect.bottom - sceneRect.top + 0.1 * rocketArrowHeight;
 
             arrowRocket.style.left = (rocketCenterX - 5) + 'px';
             arrowRocket.style.top = rocketBaseY + 'px';
             arrowRocket.style.display = 'block';
 
-            // 2) Flèches pistolets (montée seulement)
+            // 2) Flèches pistolets
             const cowboyRect = cowboy.getBoundingClientRect();
             const cowboyBottomY = cowboyRect.bottom - sceneRect.top;
             const cowboyCenterX = cowboyRect.left + cowboyRect.width / 2 - sceneRect.left;
@@ -359,7 +358,6 @@
       }
       isPlaying = true;
       btnPlay.textContent = 'Stop';
-
       resetScene();
       startCycle();
     }
