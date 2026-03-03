@@ -46,12 +46,12 @@
     /* projectile (balle / ballon) */
     #projectile {
       position: absolute;
-      width: 20px;
-      height: 20px;
+      width: 40px;   /* ballon plus gros au départ */
+      height: 40px;
       border-radius: 50%;
       background: #8adf3c;
       left: 430px;
-      top: 450px;
+      top: 430px;
     }
 
     #cowboy {
@@ -83,7 +83,7 @@
       width: 10px;              /* flèches épaisses */
       background: red;
       transform-origin: center top;
-      display: none;            /* cachées au départ */
+      display: none;            /* cachées par défaut */
     }
 
     .arrow::after {
@@ -155,7 +155,7 @@
     const arrowBalloon = document.getElementById('arrowBalloon');
 
     // ===== 2. PARAMÈTRES GÉNÉRAUX =====
-    const duration = 2500; // durée d'une séquence (ms)
+    const duration = 3500; // durée plus longue pour un mouvement plus lent
 
     // Positions initiales mémorisées au chargement
     const initialProjectile = {
@@ -180,8 +180,8 @@
       // Ballon
       projectile.style.left = initialProjectile.left + 'px';
       projectile.style.top = initialProjectile.top + 'px';
-      projectile.style.width = '20px';
-      projectile.style.height = '20px';
+      projectile.style.width = '40px';
+      projectile.style.height = '40px';
 
       // Fusée
       rocket.style.left = initialRocket.left + 'px';
@@ -191,8 +191,11 @@
       // Cow-boy
       cowboy.style.bottom = initialCowboy.bottom + 'px';
 
-      // flèches : visibilité en fonction de la case Action
-      updateActionArrowsVisibility();
+      // flèches : cachées au départ, même si Action est coché
+      arrowRocket.style.display = 'none';
+      arrowGunLeft.style.display = 'none';
+      arrowGunRight.style.display = 'none';
+      arrowBalloon.style.display = 'none';
     }
 
     // Affiche ou cache les flèches rouges selon la case "Action"
@@ -228,7 +231,7 @@
 
       const startTime = performance.now();
 
-      // Aléatoire pour la chute du ballon
+      // Aléatoire pour la chute du ballon (seconde phase)
       const randomOffsetX = (Math.random() - 0.5) * 100; // décalage latéral global
       const randomOffsetY = Math.random() * 50;          // variation de profondeur
 
@@ -256,18 +259,18 @@
           }
           cowboy.style.bottom = cowboyBottom + 'px';
 
-          // ----- BALLON : se dégonfle puis tombe en zigzag -----
+          // ----- BALLON : montée lente puis chute en zigzag -----
           let x, y, size;
           if (t < 0.5) {
-            // Phase 1 : encore près du cow-boy, commence à se dégonfler
+            // Phase 1 : montée lente, flèche verticale vers le bas
             const localT = t / 0.5;
-            x = initialProjectile.left + randomOffsetX * 0.3 * localT;
-            y = initialProjectile.top - 40 * localT;
-            size = 20 * (1 - 0.5 * localT); // 20 → 10 px
+            x = initialProjectile.left;
+            y = initialProjectile.top - 60 * localT;  // montée plus lente
+            size = 40 * (1 - 0.2 * localT);          // 40 → 32 px
           } else {
-            // Phase 2 : chute en zigzag
+            // Phase 2 : chute en zigzag, plus lente
             const localT = (t - 0.5) / 0.5;   // 0 → 1
-            const fallY = initialProjectile.top - 40 + (220 + randomOffsetY) * localT;
+            const fallY = initialProjectile.top - 60 + (220 + randomOffsetY) * localT;
 
             // zigzag horizontal (sinus) autour de randomOffsetX
             const zigzagAmplitude = 40;
@@ -276,7 +279,7 @@
             x = initialProjectile.left + randomOffsetX + zigzag;
             y = fallY;
 
-            size = 10 * (1 - localT); // 10 → 0 px
+            size = 32 * (1 - localT); // 32 → 0 px
           }
           const clampedSize = Math.max(size, 2);
           projectile.style.left = x + 'px';
@@ -292,14 +295,14 @@
             const rocketRect = rocket.getBoundingClientRect();
             const rocketCenterX = rocketRect.left + rocketRect.width / 2 - sceneRect.left;
 
-            // Décalage vers le bas = 1,3 fois la hauteur de la flèche
             const rocketArrowHeight = parseFloat(getComputedStyle(arrowRocket).height);
-            const rocketBaseY = rocketRect.bottom - sceneRect.top - 1.3 * rocketArrowHeight;
+            // Décalage total : 1,3 + 0,5 = 1,8 fois la hauteur de flèche
+            const rocketBaseY = rocketRect.bottom - sceneRect.top - 1.8 * rocketArrowHeight;
 
             arrowRocket.style.left = (rocketCenterX - 5) + 'px';
             arrowRocket.style.top = rocketBaseY + 'px';
 
-            // 2) Flèches pistolets : remontées d'une hauteur de flèche
+            // 2) Flèches pistolets : remontées de 1 hauteur + 0,5 hauteur
             const cowboyRect = cowboy.getBoundingClientRect();
             const cowboyBottomY = cowboyRect.bottom - sceneRect.top;
             const cowboyCenterX = cowboyRect.left + cowboyRect.width / 2 - sceneRect.left;
@@ -310,7 +313,7 @@
             const leftGunX = cowboyCenterX - gunOffsetX;
             const rightGunX = cowboyCenterX + gunOffsetX;
 
-            const gunBaseY = cowboyBottomY - gunArrowHeight; // remonté d'une hauteur de flèche
+            const gunBaseY = cowboyBottomY - 1.5 * gunArrowHeight;
 
             arrowGunLeft.style.left = (leftGunX - 5) + 'px';
             arrowGunLeft.style.top = gunBaseY + 'px';
@@ -318,40 +321,44 @@
             arrowGunRight.style.left = (rightGunX - 5) + 'px';
             arrowGunRight.style.top = gunBaseY + 'px';
 
-            // 3) Flèche ballon : toujours opposée au mouvement instantané
+            // 3) Flèche ballon
             const projRect = projectile.getBoundingClientRect();
             const projCenterX = projRect.left + projRect.width / 2 - sceneRect.left;
             const projCenterY = projRect.top + projRect.height / 2 - sceneRect.top;
 
-            // On calcule une approximation de la vitesse (dx, dy) avec une petite dérivée numérique
-            const dt = 0.01;
-            const tAhead = Math.min(t + dt, 1);
-            let xAhead, yAhead;
-
-            if (tAhead < 0.5) {
-              const localT = tAhead / 0.5;
-              xAhead = initialProjectile.left + randomOffsetX * 0.3 * localT;
-              yAhead = initialProjectile.top - 40 * localT;
+            if (t < 0.5) {
+              // Montée : flèche strictement verticale vers le bas
+              arrowBalloon.style.left = (projCenterX - 5) + 'px';
+              arrowBalloon.style.top = projCenterY + 'px';
+              arrowBalloon.style.transform = 'rotate(0rad)'; // vers le bas
             } else {
-              const localT = (tAhead - 0.5) / 0.5;
-              const fallY2 = initialProjectile.top - 40 + (220 + randomOffsetY) * localT;
-              const zigzagAmplitude2 = 40;
-              const zigzag2 = Math.sin(localT * Math.PI * 4) * zigzagAmplitude2;
-              xAhead = initialProjectile.left + randomOffsetX + zigzag2;
-              yAhead = fallY2;
+              // Descente : flèche opposée au mouvement (comme précédemment)
+              const dt = 0.01;
+              const tAhead = Math.min(t + dt, 1);
+              let xAhead, yAhead;
+
+              if (tAhead < 0.5) {
+                const localT = tAhead / 0.5;
+                xAhead = initialProjectile.left;
+                yAhead = initialProjectile.top - 60 * localT;
+              } else {
+                const localT = (tAhead - 0.5) / 0.5;
+                const fallY2 = initialProjectile.top - 60 + (220 + randomOffsetY) * localT;
+                const zigzagAmplitude2 = 40;
+                const zigzag2 = Math.sin(localT * Math.PI * 4) * zigzagAmplitude2;
+                xAhead = initialProjectile.left + randomOffsetX + zigzag2;
+                yAhead = fallY2;
+              }
+
+              const dx = xAhead - x;
+              const dy = yAhead - y;
+              const angleMove = Math.atan2(dy, dx);
+              const angleArrow = angleMove + Math.PI; // opposée au mouvement
+
+              arrowBalloon.style.left = (projCenterX - 5) + 'px';
+              arrowBalloon.style.top = projCenterY + 'px';
+              arrowBalloon.style.transform = 'rotate(' + angleArrow + 'rad)';
             }
-
-            const dx = xAhead - x;
-            const dy = yAhead - y;
-
-            // angle du mouvement
-            const angleMove = Math.atan2(dy, dx);
-            // flèche opposée au mouvement : + π (sens contraire)
-            const angleArrow = angleMove + Math.PI;
-
-            arrowBalloon.style.left = (projCenterX - 5) + 'px';
-            arrowBalloon.style.top = (projCenterY) + 'px';
-            arrowBalloon.style.transform = 'rotate(' + angleArrow + 'rad)';
           }
 
           animationFrameId = requestAnimationFrame(step);
@@ -369,10 +376,10 @@
     // ===== 5. ÉCOUTEURS D'ÉVÉNEMENTS =====
     btnPlay.addEventListener('click', playAnimation);
 
-    // au chargement : mise à zéro et visibilité des flèches
+    // au chargement : mise à zéro (flèches cachées)
     resetScene();
 
-    // cocher/décocher "Action" : ne touche pas au mouvement, seulement aux flèches
+    // cocher/décocher "Action" : flèches visibles uniquement quand Action est coché
     chkAction.addEventListener('change', () => {
       updateActionArrowsVisibility();
     });
