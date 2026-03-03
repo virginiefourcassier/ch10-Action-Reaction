@@ -40,31 +40,31 @@
   <script>
     const projectile = document.getElementById('projectile');
 
-    // paramètres de la trajectoire
-    const startX = 430;      // position de départ (x)
-    const startY = 450;      // position de départ (y)
-    const amplitudeX = 300;  // distance parcourue horizontalement
-    const amplitudeY = 180;  // hauteur maximale de la « cloche »
-    const duration = 2000;   // durée de l'animation en millisecondes
+    // paramètres communs
+    const startX = 430;
+    const startY = 450;
+    const amplitudeX = 300;
+    const amplitudeY = 180;
+    const duration = 2000;
 
-    function animateProjectile() {
+    // animation 1 : trajectoire en cloche (balle éjectée)
+    function animateProjectileAction() {
       const startTime = performance.now();
 
       function step(now) {
-        const t = (now - startTime) / duration; // t entre 0 et 1
+        const t = (now - startTime) / duration;
 
         if (t <= 1) {
-          // Avancement horizontal linéaire
           const x = startX + amplitudeX * t;
-          // Trajectoire en cloche (parabole simple)
           const y = startY - (4 * amplitudeY * t * (1 - t));
 
           projectile.style.left = x + 'px';
           projectile.style.top = y + 'px';
+          projectile.style.width = '20px';
+          projectile.style.height = '20px';
 
           requestAnimationFrame(step);
         } else {
-          // retour à la position de départ
           projectile.style.left = startX + 'px';
           projectile.style.top = startY + 'px';
         }
@@ -73,9 +73,47 @@
       requestAnimationFrame(step);
     }
 
-    // lance l'animation au chargement de la page
-    window.addEventListener('load', animateProjectile);
+    // animation 2 : ballon qui se dégonfle (taille diminue)
+    function animateProjectileDeflate() {
+      const startTime = performance.now();
+
+      function step(now) {
+        const t = (now - startTime) / duration;
+
+        if (t <= 1) {
+          // déplacement léger vers la gauche (ou vers le haut) pour suggérer le jet de gaz
+          const x = startX - amplitudeX * t * 0.3;
+          const y = startY - amplitudeY * t * 0.2;
+
+          // taille qui diminue progressivement
+          const size = 20 * (1 - t); // de 20px à 0
+          const clampedSize = Math.max(size, 2); // on évite de descendre à 0
+
+          projectile.style.left = x + 'px';
+          projectile.style.top = y + 'px';
+          projectile.style.width = clampedSize + 'px';
+          projectile.style.height = clampedSize + 'px';
+
+          requestAnimationFrame(step);
+        } else {
+          // fin : ballon presque disparu, on le remet en position initiale
+          projectile.style.left = startX + 'px';
+          projectile.style.top = startY + 'px';
+          projectile.style.width = '20px';
+          projectile.style.height = '20px';
+        }
+      }
+
+      requestAnimationFrame(step);
+    }
+
+    // pour l'instant, on teste les deux animations l'une après l'autre
+    window.addEventListener('load', () => {
+      animateProjectileAction();
+      setTimeout(animateProjectileDeflate, duration + 500);
+    });
   </script>
+
 
 </body>
 </html>
