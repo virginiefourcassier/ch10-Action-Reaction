@@ -42,7 +42,6 @@
       cursor: pointer;
     }
 
-    /* ballon : image PNG avec fond transparent */
     #projectile {
       position: absolute;
       width: 150px;
@@ -81,7 +80,7 @@
       width: 10px;
       transform-origin: center top;
       display: none;
-      z-index: 10;          /* flèches devant le ballon */
+      z-index: 10;
     }
 
     .arrow::after {
@@ -165,13 +164,11 @@
     const cowboy = document.getElementById('cowboy');
     const rocket = document.getElementById('rocket');
 
-    // flèches rouges (action)
     const arrowRocket = document.getElementById('arrowRocket');
     const arrowGunLeft = document.getElementById('arrowGunLeft');
     const arrowGunRight = document.getElementById('arrowGunRight');
     const arrowBalloon = document.getElementById('arrowBalloon');
 
-    // flèches vertes (réaction)
     const arrowRocketR = document.getElementById('arrowRocketR');
     const arrowGunLeftR = document.getElementById('arrowGunLeftR');
     const arrowGunRightR = document.getElementById('arrowGunRightR');
@@ -282,7 +279,7 @@
           const sceneRect = scene.getBoundingClientRect();
 
           if (chkAction.checked || chkReaction.checked) {
-            // === Fusée ===
+            // === Fusée =====
             const rocketRect = rocket.getBoundingClientRect();
             const rocketCenterX = rocketRect.left + rocketRect.width / 2 - sceneRect.left;
             const rocketArrowHeight = parseFloat(getComputedStyle(arrowRocket).height);
@@ -347,13 +344,11 @@
               arrowGunRightR.style.display = 'none';
             }
 
-            // === Ballon ===
+            // === Ballon : base sur le nœud en montée ET en descente ===
             const projRect = projectile.getBoundingClientRect();
             const projCenterX = projRect.left + projRect.width / 2 - sceneRect.left;
             const projCenterY = projRect.top + projRect.height / 2 - sceneRect.top;
-
-            // position approximative du nœud : un peu sous le centre
-            const knotOffsetY = projRect.height * 0.25;
+            const knotOffsetY = projRect.height * 0.25; // nœud sous le centre
             const knotX = projCenterX;
             const knotY = projCenterY + knotOffsetY;
 
@@ -394,8 +389,8 @@
               const dx = xAhead - x;
               const dy = yAhead - y;
               const angleMove = Math.atan2(dy, dx);
-              const angleRed = angleMove + Math.PI; // rouge
-              const angleGreen = angleMove;         // verte
+              const angleRed = angleMove + Math.PI;
+              const angleGreen = angleMove;
 
               if (chkAction.checked) {
                 arrowBalloon.style.display = 'block';
