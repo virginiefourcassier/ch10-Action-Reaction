@@ -118,6 +118,7 @@
       height: 45px;
     }
 
+    /* hauteur initiale (sera écrasée dynamiquement pour le ballon) */
     #arrowBalloon,
     #arrowBalloonR {
       height: 40px;
@@ -274,6 +275,14 @@
           projectile.style.top = y + 'px';
           projectile.style.width = clampedSize + 'px';
 
+          // *** UNIQUE MODIF : hauteur des flèches du ballon proportionnelle à la taille du ballon ***
+          const scaleBalloon = clampedSize / initialProjectile.width;
+          const baseArrowHeight = 40; // hauteur initiale définie en CSS
+          const currentArrowHeight = Math.max(10, baseArrowHeight * scaleBalloon);
+          arrowBalloon.style.height = currentArrowHeight + 'px';
+          arrowBalloonR.style.height = currentArrowHeight + 'px';
+          // *** FIN UNIQUE MODIF ***
+
           const sceneRect = scene.getBoundingClientRect();
 
           if (chkAction.checked || chkReaction.checked) {
@@ -349,12 +358,10 @@
             const w = projRect.width;
             const h = projRect.height;
 
-            // vecteur centre -> nœud dans l'image non tournée
             const dx0 = 0;
-            const dy0 = h * 0.32;   // nœud sous le centre
+            const dy0 = h * 0.32;
 
             if (t < 0.5) {
-              // montée : ballon non tourné, angleRed = 0
               const knotX = projCenterX + dx0;
               const knotY = projCenterY + dy0;
 
@@ -374,7 +381,6 @@
 
               projectile.style.transform = 'rotate(0rad)';
             } else {
-              // descente : calcul de l'angle de mouvement
               const dt = 0.01;
               const tAhead = Math.min(t + dt, 1);
               let xAhead, yAhead;
@@ -398,11 +404,10 @@
               const angleRed = angleMove + Math.PI;
               const angleGreen = angleMove;
 
-              // rotation du vecteur centre->nœud par l'angleRed
               const cosA = Math.cos(angleRed);
               const sinA = Math.sin(angleRed);
-              const dxRot = dx0 * cosA - dy0 * sinA; // ici = -dy0*sinA
-              const dyRot = dx0 * sinA + dy0 * cosA; //     =  dy0*cosA
+              const dxRot = dx0 * cosA - dy0 * sinA;
+              const dyRot = dx0 * sinA + dy0 * cosA;
 
               const knotX = projCenterX + dxRot;
               const knotY = projCenterY + dyRot;
