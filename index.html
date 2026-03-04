@@ -279,7 +279,7 @@
           const sceneRect = scene.getBoundingClientRect();
 
           if (chkAction.checked || chkReaction.checked) {
-            // === Fusée =====
+            // === Fusée ===
             const rocketRect = rocket.getBoundingClientRect();
             const rocketCenterX = rocketRect.left + rocketRect.width / 2 - sceneRect.left;
             const rocketArrowHeight = parseFloat(getComputedStyle(arrowRocket).height);
@@ -344,15 +344,20 @@
               arrowGunRightR.style.display = 'none';
             }
 
-            // === Ballon : base sur le nœud en montée ET en descente ===
+            // === Ballon : nœud qui suit la rotation ===
             const projRect = projectile.getBoundingClientRect();
             const projCenterX = projRect.left + projRect.width / 2 - sceneRect.left;
             const projCenterY = projRect.top + projRect.height / 2 - sceneRect.top;
-            const knotOffsetY = projRect.height * 0.25; // nœud sous le centre
-            const knotX = projCenterX;
-            const knotY = projCenterY + knotOffsetY;
+
+            // vecteur centre -> nœud dans l'image non tournée
+            const dx0 = projRect.width * 0.35;   // vers la droite
+            const dy0 = projRect.height * 0.10;  // légèrement vers le bas
 
             if (t < 0.5) {
+              // montée : pas de rotation
+              const knotX = projCenterX + dx0;
+              const knotY = projCenterY + dy0;
+
               if (chkAction.checked) {
                 arrowBalloon.style.display = 'block';
                 arrowBalloon.style.left = (knotX - 5) + 'px';
@@ -391,6 +396,15 @@
               const angleMove = Math.atan2(dy, dx);
               const angleRed = angleMove + Math.PI;
               const angleGreen = angleMove;
+
+              // rotation du vecteur centre->nœud par l'angle de la flèche rouge
+              const cosA = Math.cos(angleRed);
+              const sinA = Math.sin(angleRed);
+              const dxRot = dx0 * cosA - dy0 * sinA;
+              const dyRot = dx0 * sinA + dy0 * cosA;
+
+              const knotX = projCenterX + dxRot;
+              const knotY = projCenterY + dyRot;
 
               if (chkAction.checked) {
                 arrowBalloon.style.display = 'block';
